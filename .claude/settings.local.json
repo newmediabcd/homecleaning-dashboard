@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip show:*)",
+      "Bash(python build_dashboard.py)",
+      "Bash(set PYTHONUTF8=1)",
+      "Bash(python -X utf8 build_dashboard.py)",
+      "Bash(python -X utf8 -c ':*)",
+      "WebFetch(domain:docs.google.com)",
+      "Bash(python3:*)",
+      "Bash(pip install:*)",
+      "Bash(python:*)"
+    ]
+  }
+}
