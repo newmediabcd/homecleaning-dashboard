@@ -1000,22 +1000,29 @@ def fill_template(template: str, replacements: dict) -> str:
 
 def build_action_table_html(df: pd.DataFrame) -> str:
     """액션사항 시트를 HTML 테이블로 변환"""
+    import html as html_lib
     if df is None or df.empty:
         return "<p style='color:var(--tx3);font-size:13px'>데이터가 없습니다.</p>"
 
-    # NaN 처리
+    # Date, 내역 컬럼만 사용 (나머지는 병합 셀 흔적)
+    keep = [c for c in df.columns if c in ("Date", "내역")]
+    if not keep:
+        keep = [c for c in df.columns if not c.startswith("Unnamed")]
+    df = df[keep].copy()
     df = df.fillna("")
 
-    cols = list(df.columns)
-    header_html = "".join(f"<th>{c}</th>" for c in cols)
+    # 내역이 비어있는 행 제거 (주말 등 액션 없는 날)
+    df = df[df["내역"].astype(str).str.strip() != ""]
+
+    header_html = "<th>날짜</th><th>액션 내역</th>"
 
     rows_html = ""
     for _, row in df.iterrows():
-        cells = ""
-        for c in cols:
-            val = str(row[c]).strip()
-            cells += f"<td>{val}</td>"
-        rows_html += f"<tr>{cells}</tr>"
+        date_val = html_lib.escape(str(row.get("Date", "")).strip())
+        detail_val = html_lib.escape(str(row.get("내역", "")).strip())
+        # \n → <br> 줄바꿈 처리
+        detail_val = detail_val.replace("\n", "<br>")
+        rows_html += f"<tr><td style='white-space:nowrap;color:var(--tx2);font-size:12px'>{date_val}</td><td>{detail_val}</td></tr>"
 
     return (
         f'<div class="tw"><table id="action-tbl">'
