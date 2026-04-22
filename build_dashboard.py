@@ -548,7 +548,7 @@ def generate_comments(cd: dict) -> dict:
     # 줄3: 전환 발생 키워드
     conv_kws = [k for k in kw if k['conv'] > 0]
     if conv_kws:
-        parts = [f"[{k['kw']}] CVR {k['cvr']}%, CPA {k['cpa']:,}원" for k in conv_kws[:3]]
+        parts = [f"[{k['kw']}] 전환 {k['conv']}건, CPA {k['cpa']:,}원" for k in conv_kws[:3]]
         l3 = ", ".join(parts) + "으로 전환 연결."
     else:
         l3 = "당일 전환 발생 키워드 없음."
@@ -605,7 +605,7 @@ def generate_comments(cd: dict) -> dict:
     zero_kws = [k for k in kw if k['conv'] == 0 and k['spend'] > 0]
     parts = []
     if conv_kws:
-        parts.append(", ".join(f"[{k['kw']}] CVR {k['cvr']}%, CPA {k['cpa']:,}원" for k in conv_kws[:2]) + "으로 전환 연결.")
+        parts.append(", ".join(f"[{k['kw']}] 전환 {k['conv']}건, CPA {k['cpa']:,}원" for k in conv_kws[:2]) + "으로 전환 연결.")
     if zero_kws:
         parts.append(", ".join(f"[{k['kw']}] 광고비 {ko(k['spend'])} 소진, 전환 0건" for k in zero_kws[:2]) + ".")
     l2 = " ".join(parts) if parts else "전환 발생 키워드 없음."
@@ -716,23 +716,55 @@ def generate_comments(cd: dict) -> dict:
         if not rows:
             return f"<strong>{tag}</strong> — 해당 기간 데이터 없음."
 
-        date_range = f"{rows[0]['date']}~{rows[-1]['date']}" if len(rows) > 1 else rows[0]['date']
-        cpcs = [r['cpc'] for r in rows if r['cpc'] > 0]
-        cpc_str = (f"CPC {min(cpcs):,}~{max(cpcs):,}원" if len(set(cpcs)) > 1 else f"CPC {cpcs[0]:,}원") if cpcs else ""
+        yesterday = rows[-1]
+        day_before = rows[-2] if len(rows) >= 2 else None
 
-        total_conv = round(sum(r['conv'] for r in rows), 1)
-        conv_rows = [r for r in rows if r['conv'] > 0]
-        if conv_rows:
-            avg_cpa = int(sum(r['cpa'] for r in conv_rows) / len(conv_rows))
-            conv_str = f" 전환 {total_conv}건, CPA {avg_cpa:,}원({goal(avg_cpa)})."
+        def _row_str(r, label):
+            conv = round(r["conv"], 1)
+            cpa = r["cpa"]
+            date = r["date"]
+            if conv > 0:
+                return f"{label}({date}) 전환 {conv}건, CPA {cpa:,}원"
+            else:
+                return f"{label}({date}) 전환 0건"
+
+        y_str = _row_str(yesterday, "전일")
+
+        if day_before:
+            db_str = _row_str(day_before, "전전일")
+            y_conv = round(yesterday["conv"], 1)
+            db_conv = round(day_before["conv"], 1)
+            y_cpa = yesterday["cpa"]
+            db_cpa = day_before["cpa"]
+            if y_conv > 0 and db_conv > 0:
+                cpa_lbl = "CPA 개선" if y_cpa < db_cpa else "CPA 상승"
+                if y_conv > db_conv:
+                    comp = f"{cpa_lbl} · 전환 증가"
+                elif y_conv < db_conv:
+                    comp = f"{cpa_lbl} · 전환 감소"
+                else:
+                    comp = cpa_lbl
+            elif y_conv > 0 and db_conv == 0:
+                comp = "전환 발생"
+            elif y_conv == 0 and db_conv > 0:
+                comp = "전환 미발생"
+            else:
+                comp = "전환 0건 지속"
+            compare_str = f"{y_str} — {db_str} 대비 {comp}."
         else:
-            conv_str = " 전환 0건 지속."
+            compare_str = f"{y_str}."
 
-        ranks = [r['rank'] for r in rows if r.get('rank', 0) > 0]
-        rank_str = f" 노출순위 {round(sum(ranks)/len(ranks), 1)}위 유지." if ranks else ""
+        y_rank = yesterday.get("rank", 0) or 0
+        db_rank = (day_before.get("rank", 0) or 0) if day_before else 0
+        if y_rank > 0 and db_rank > 0:
+            rank_dir = "개선" if y_rank < db_rank else ("하락" if y_rank > db_rank else "유지")
+            rank_str = f" 노출순위 {db_rank}위 → {y_rank}위로 {rank_dir}."
+        elif y_rank > 0:
+            rank_str = f" 노출순위 {y_rank}위."
+        else:
+            rank_str = ""
 
-        body = f"{date_range}" + (f" {cpc_str}." if cpc_str else "") + conv_str + rank_str
-        return f"<strong>{tag}</strong> — {body}"
+        return f"<strong>{tag}</strong> — {compare_str}{rank_str}"
 
     # MO 5개
     for kw in AUTO_BID_KEYWORDS:
@@ -742,7 +774,7 @@ def generate_comments(cd: dict) -> dict:
     for kw in AUTO_BID_KEYWORDS[:3]:
         auto_html.append(f'    <div class="ins-i">{auto_line("PC", kw)}</div>')
 
-    # PC 마지막 2개 묶음 (입주청소가격·입주청소전문)
+    # PC 마지막 2개 묶음 (입주청소가격·입주청소전문) — 전일 vs 전전일
     kw1, kw2 = AUTO_BID_KEYWORDS[3], AUTO_BID_KEYWORDS[4]
     d1, d2 = cd["auto"]["PC"][kw1], cd["auto"]["PC"][kw2]
     new_tag = ""
@@ -750,13 +782,59 @@ def generate_comments(cd: dict) -> dict:
         start = d1["start"] or d2["start"]
         new_tag = f" ★신규({start}~)"
     tag = f"[PC] {kw1}·{kw2}{new_tag}"
-    all_rows = [r for r in d1["rows"] + d2["rows"] if r["spend"] > 0]
-    if all_rows:
-        ranks = [r['rank'] for r in all_rows if r.get('rank', 0) > 0]
-        rank_str = f" PC 순위 {round(sum(ranks)/len(ranks), 1)}위로" if ranks else ""
-        total_conv = round(sum(r['conv'] for r in all_rows), 1)
-        conv_str = "클릭 및 전환 거의 미발생. PC에서의 효과는 제한적." if total_conv == 0 else f"전환 {total_conv}건 발생."
-        pc_body = f"{rank_str} {conv_str}"
+    rows1 = [r for r in d1["rows"] if r["spend"] > 0]
+    rows2 = [r for r in d2["rows"] if r["spend"] > 0]
+    # 날짜 기준 합산
+    from collections import defaultdict
+    date_map = defaultdict(lambda: {"conv": 0, "spend": 0, "rank_sum": 0, "rank_cnt": 0})
+    for r in rows1 + rows2:
+        dm = date_map[r["date"]]
+        dm["conv"] += r["conv"]
+        dm["spend"] += r["spend"]
+        rk = r.get("rank", 0) or 0
+        if rk > 0:
+            dm["rank_sum"] += rk
+            dm["rank_cnt"] += 1
+    sorted_dates = sorted(date_map.keys())
+    if sorted_dates:
+        def _combo_row(dt):
+            dm = date_map[dt]
+            conv = round(dm["conv"], 1)
+            cpa = int(dm["spend"] / dm["conv"]) if dm["conv"] > 0 else 0
+            rank = round(dm["rank_sum"] / dm["rank_cnt"], 1) if dm["rank_cnt"] > 0 else 0
+            return {"date": dt, "conv": conv, "cpa": cpa, "rank": rank}
+        y_row = _combo_row(sorted_dates[-1])
+        db_row = _combo_row(sorted_dates[-2]) if len(sorted_dates) >= 2 else None
+
+        def _cs(r, label):
+            if r["conv"] > 0:
+                return f"{label}({r['date']}) 전환 {r['conv']}건, CPA {r['cpa']:,}원"
+            return f"{label}({r['date']}) 전환 0건"
+
+        y_s = _cs(y_row, "전일")
+        if db_row:
+            db_s = _cs(db_row, "전전일")
+            if y_row["conv"] > 0 and db_row["conv"] > 0:
+                cpa_lbl = "CPA 개선" if y_row["cpa"] < db_row["cpa"] else "CPA 상승"
+                comp = cpa_lbl + (" · 전환 증가" if y_row["conv"] > db_row["conv"] else " · 전환 감소" if y_row["conv"] < db_row["conv"] else "")
+            elif y_row["conv"] > 0:
+                comp = "전환 발생"
+            elif db_row["conv"] > 0:
+                comp = "전환 미발생"
+            else:
+                comp = "전환 0건 지속"
+            compare_str = f"{y_s} — {db_s} 대비 {comp}."
+        else:
+            compare_str = f"{y_s}."
+
+        if y_row["rank"] > 0 and db_row and db_row["rank"] > 0:
+            rank_dir = "개선" if y_row["rank"] < db_row["rank"] else ("하락" if y_row["rank"] > db_row["rank"] else "유지")
+            rank_str = f" 노출순위 {db_row['rank']}위 → {y_row['rank']}위로 {rank_dir}."
+        elif y_row["rank"] > 0:
+            rank_str = f" 노출순위 {y_row['rank']}위."
+        else:
+            rank_str = ""
+        pc_body = f"{compare_str}{rank_str}"
     else:
         pc_body = "해당 기간 데이터 없음."
     auto_html.append(f'    <div class="ins-i"><strong>{tag}</strong> — {pc_body}</div>')
@@ -1160,6 +1238,11 @@ def main():
     out_name = OUTPUT_FILENAME.format(date=date_tag)
     out_path = os.path.join(BASE_DIR, out_name)
     with open(out_path, "w", encoding="utf-8") as f:
+        f.write(output)
+
+    # index.html 로도 저장 (GitHub Pages 배포용)
+    index_path = os.path.join(BASE_DIR, "index.html")
+    with open(index_path, "w", encoding="utf-8") as f:
         f.write(output)
 
     print(f"\n{'='*55}")
