@@ -3,7 +3,7 @@
 # ============================================================
 
 # 구글 시트 ID (URL에서 /d/ 뒤 ~ /edit 앞 부분)
-SHEET_ID = "1uKwGWS_36G-_twrayM7t6AlOPact-jYz2yu4TA0N25o"
+SHEET_ID = "1pVvSS__AFoxkf2qu9K5DqA09LhO3byTiQJtwaLzu84w"
 
 # 시트 이름
 SHEET_MEDIA_RAW   = "media raw"
