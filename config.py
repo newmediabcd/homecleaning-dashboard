@@ -9,6 +9,7 @@ SHEET_ID = "1pVvSS__AFoxkf2qu9K5DqA09LhO3byTiQJtwaLzu84w"
 SHEET_MEDIA_RAW   = "media raw"
 SHEET_SUMMARY     = "전체_summary"
 SHEET_GA4         = "GA4 raw"
+SHEET_ACTION      = "액션사항"
 
 # 출력 파일명 (template.html과 같은 폴더)
 OUTPUT_FILENAME = "크린토피아_DailyReport_대시보드_{date}.html"

@@ -18,7 +18,7 @@ from datetime import datetime
 # 설정 로드
 # ──────────────────────────────────────────
 from config import (
-    SHEET_ID, SHEET_MEDIA_RAW, SHEET_SUMMARY, SHEET_GA4,
+    SHEET_ID, SHEET_MEDIA_RAW, SHEET_SUMMARY, SHEET_GA4, SHEET_ACTION,
     OUTPUT_FILENAME, TEMPLATE_FILENAME,
     GOOGLE_TYPE_RULES, NAVER_PC_KEYWORD,
     AUTO_BID_KEYWORDS, TARGET_CPA,
@@ -998,6 +998,33 @@ def fill_template(template: str, replacements: dict) -> str:
     return template
 
 
+def build_action_table_html(df: pd.DataFrame) -> str:
+    """액션사항 시트를 HTML 테이블로 변환"""
+    if df is None or df.empty:
+        return "<p style='color:var(--tx3);font-size:13px'>데이터가 없습니다.</p>"
+
+    # NaN 처리
+    df = df.fillna("")
+
+    cols = list(df.columns)
+    header_html = "".join(f"<th>{c}</th>" for c in cols)
+
+    rows_html = ""
+    for _, row in df.iterrows():
+        cells = ""
+        for c in cols:
+            val = str(row[c]).strip()
+            cells += f"<td>{val}</td>"
+        rows_html += f"<tr>{cells}</tr>"
+
+    return (
+        f'<div class="tw"><table id="action-tbl">'
+        f"<thead><tr>{header_html}</tr></thead>"
+        f"<tbody>{rows_html}</tbody>"
+        f"</table></div>"
+    )
+
+
 # ══════════════════════════════════════════
 # 8. 메인
 # ══════════════════════════════════════════
@@ -1011,6 +1038,7 @@ def main():
     print("\n[1] 구글 시트 로드 중...")
     raw_df     = load_sheet(SHEET_MEDIA_RAW)
     summary_df = load_sheet(SHEET_SUMMARY)
+    action_df  = load_sheet(SHEET_ACTION)
 
     df = prepare_media_raw(raw_df)
 
@@ -1175,6 +1203,9 @@ def main():
 
         # 전체 날짜 코멘트 JSON (날짜 선택 필터용)
         "ALL_COMMENTS_JSON": all_comments_json,
+
+        # 액션 현황
+        "ACTION_TABLE_HTML": build_action_table_html(action_df),
     }
 
     output = fill_template(template, replacements)
