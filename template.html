@@ -249,6 +249,11 @@ tr.tnew-g:hover td{background:rgba(220,245,237,0.5)}
     <div class="ins-l" id="ppc-title">{{TITLE_N_PC}}</div>
     <div id="cmt-npc">{{COMMENT_N_PC}}</div>
   </div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:.9rem;padding:.65rem 1rem;background:#e8f7f1;border-radius:var(--rs);border:1px solid #a8dfc8">
+    <span style="font-size:12px;font-weight:700;color:#0a6e4c">날짜 선택</span>
+    <select id="ppc-date-sel" onchange="onSecDateChange('ppc',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid #a8dfc8;border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
+    <span style="font-size:12px;color:var(--tx2)">선택일 vs 전일 KPI 비교</span>
+  </div>
   <div class="kg" id="ppc-kg">
     <div class="ki"><div class="kl">4/19 광고비</div><div class="kv">44,550원</div><div class="ks kd">전일 35,102원 대비 +27%</div></div>
     <div class="ki"><div class="kl">4/19 전환</div><div class="kv">3건</div><div class="ks ku">전일 1건 대비 +200%</div></div>
@@ -302,6 +307,11 @@ tr.tnew-g:hover td{background:rgba(220,245,237,0.5)}
   <div class="ins ins-green">
     <div class="ins-l" id="pmo-title">{{TITLE_N_MO}}</div>
     <div id="cmt-nmo">{{COMMENT_N_MO}}</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:.9rem;padding:.65rem 1rem;background:#e8f7f1;border-radius:var(--rs);border:1px solid #a8dfc8">
+    <span style="font-size:12px;font-weight:700;color:#0a6e4c">날짜 선택</span>
+    <select id="pmo-date-sel" onchange="onSecDateChange('pmo',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid #a8dfc8;border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
+    <span style="font-size:12px;color:var(--tx2)">선택일 vs 전일 KPI 비교</span>
   </div>
   <div class="kg" id="pmo-kg">
     <div class="ki"><div class="kl">4/19 광고비</div><div class="kv">65.8만원</div><div class="ks kd">전일 53.0만원 대비 +24%</div></div>
@@ -365,6 +375,11 @@ tr.tnew-g:hover td{background:rgba(220,245,237,0.5)}
     <div class="ins-l" id="pgb-title">{{TITLE_G_BRAND}}</div>
     <div id="cmt-gb">{{COMMENT_G_BRAND}}</div>
   </div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:.9rem;padding:.65rem 1rem;background:#e8f0fa;border-radius:var(--rs);border:1px solid #b8d8f0">
+    <span style="font-size:12px;font-weight:700;color:#0d4a8a">날짜 선택</span>
+    <select id="pgb-date-sel" onchange="onSecDateChange('pgb',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid #b8d8f0;border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
+    <span style="font-size:12px;color:var(--tx2)">선택일 vs 전일 KPI 비교</span>
+  </div>
   <div class="kg" id="pgb-kg">
     <div class="ki"><div class="kl">4/15 광고비</div><div class="kv">74,030원</div><div class="ks kd">전일 22,569원 대비 +228%</div></div>
     <div class="ki"><div class="kl">4/15 전환</div><div class="kv">4.04건</div><div class="ks kd">전일 5.01건 대비 -19%</div></div>
@@ -404,6 +419,11 @@ tr.tnew-g:hover td{background:rgba(220,245,237,0.5)}
   <div class="ins ins-blue">
     <div class="ins-l" id="pgc-title">{{TITLE_G_COMP}}</div>
     <div id="cmt-gc">{{COMMENT_G_COMP}}</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:.9rem;padding:.65rem 1rem;background:#e8f0fa;border-radius:var(--rs);border:1px solid #b8d8f0">
+    <span style="font-size:12px;font-weight:700;color:#0d4a8a">날짜 선택</span>
+    <select id="pgc-date-sel" onchange="onSecDateChange('pgc',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid #b8d8f0;border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
+    <span style="font-size:12px;color:var(--tx2)">선택일 vs 전일 KPI 비교</span>
   </div>
   <div class="kg" id="pgc-kg">
     <div class="ki"><div class="kl">4/15 광고비</div><div class="kv">151,846원</div><div class="ks kn">전일 192,639원 대비 -21%</div></div>
@@ -447,6 +467,11 @@ tr.tnew-g:hover td{background:rgba(220,245,237,0.5)}
   <div class="ins ins-blue">
     <div class="ins-l" id="pgg-title">{{TITLE_G_GEN}}</div>
     <div id="cmt-gg">{{COMMENT_G_GEN}}</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:.9rem;padding:.65rem 1rem;background:#e8f0fa;border-radius:var(--rs);border:1px solid #b8d8f0">
+    <span style="font-size:12px;font-weight:700;color:#0d4a8a">날짜 선택</span>
+    <select id="pgg-date-sel" onchange="onSecDateChange('pgg',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid #b8d8f0;border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
+    <span style="font-size:12px;color:var(--tx2)">선택일 vs 전일 KPI 비교</span>
   </div>
   <div class="kg" id="pgg-kg">
     <div class="ki"><div class="kl">4/15 광고비</div><div class="kv">209,064원</div><div class="ks ku">전일 298,042원 대비 -30%</div></div>
@@ -958,6 +983,12 @@ function onDateChange(selectedDate){
   _currAutoDate = selectedDate;
   const _activeKw = document.querySelector(".fbn.active");
   if(_activeKw) renderFilterTable(_activeKw.dataset.kw);
+
+  // 섹션별 날짜 드롭다운 동기화
+  Object.keys(_secCfg||{}).forEach(function(pid){
+    const sel = document.getElementById(pid+'-date-sel');
+    if(sel) sel.value = selectedDate;
+  });
 }
 
 // ── 공통 CPA 스타일 ──
@@ -1044,12 +1075,50 @@ function _updateSubPage(pageId, dataKey, pageLabel, hasRank, isNaver, currDate, 
   _renderTableRows(pageId+"-tbl", win7, dataKey, hasRank, isNaver, currDate);
 }
 
+// ── 섹션별 독립 날짜 필터 ──
+const _secCfg = {
+  ppc:{key:'npc',label:'네이버 SA · PC',  hasRank:true, isNaver:true, cmtEl:'cmt-npc',cmtKey:'N_PC'},
+  pmo:{key:'nmo',label:'네이버 SA · MO',  hasRank:true, isNaver:true, cmtEl:'cmt-nmo',cmtKey:'N_MO'},
+  pgb:{key:'gb', label:'구글 SA · 브랜드',hasRank:false,isNaver:false,cmtEl:'cmt-gb', cmtKey:'G_BRAND'},
+  pgc:{key:'gc', label:'구글 SA · 경쟁사',hasRank:false,isNaver:false,cmtEl:'cmt-gc', cmtKey:'G_COMP'},
+  pgg:{key:'gg', label:'구글 SA · 일반',  hasRank:false,isNaver:false,cmtEl:'cmt-gg', cmtKey:'G_GEN'},
+};
+
+function onSecDateChange(pageId, date){
+  const cfg = _secCfg[pageId];
+  if(!cfg) return;
+  const idx = PL.indexOf(date);
+  const prev = idx > 0 ? PL[idx-1] : null;
+  _updateSubPage(pageId, cfg.key, cfg.label, cfg.hasRank, cfg.isNaver, date, prev);
+  const cmt = allComments[date];
+  if(cmt && cmt[cfg.cmtKey]){
+    const el = document.getElementById(cfg.cmtEl);
+    if(el) el.innerHTML = cmt[cfg.cmtKey];
+  }
+}
+
 // ── 자동입찰 현재 날짜 변수 ──
 var _currAutoDate = PL[PL.length-1];
 
 // 초기화 (최신 날짜 기준)
 _buildSummaryCharts(PL[PL.length-1]);
 _updateBarColors(PL[PL.length-1]);
+
+// 섹션 날짜 드롭다운 초기화
+(function(){
+  const last = PL[PL.length-1];
+  Object.keys(_secCfg).forEach(function(pid){
+    const sel = document.getElementById(pid+'-date-sel');
+    if(!sel) return;
+    PL.forEach(function(d){
+      const opt = document.createElement('option');
+      opt.value = d; opt.textContent = d;
+      sel.appendChild(opt);
+    });
+    sel.value = last;
+    onSecDateChange(pid, last);
+  });
+})();
 
 // 코멘트 박스: 마침표 뒤 줄바꿈
 document.querySelectorAll(".ins-i").forEach(el=>{
