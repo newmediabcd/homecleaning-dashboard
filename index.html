@@ -138,7 +138,7 @@ tr.tnew-g:hover td{background:rgba(220,245,237,0.5)}
 </head>
 <body>
 <div class="topbar">
-  <div><span class="t-title">크린토피아 <span>홈클리닝</span> · Daily Report</span><span class="pill">데이터 기준 : 04/01~04/21</span><span class="pill" id="compare-pill">비교기간 : 04/20 vs 04/21</span><span class="build-status" id="build-status"><span class="build-spinner"></span>대시보드 업데이트 중...</span></div>
+  <div><span class="t-title">크린토피아 <span>홈클리닝</span> · Daily Report</span><span class="pill">데이터 기준 : 04/01~04/21</span><span class="build-status" id="build-status"><span class="build-spinner"></span>대시보드 업데이트 중...</span></div>
   <div class="t-meta">2026.04.22(수) 업데이트</div>
 </div>
 <div class="nav">
@@ -938,9 +938,7 @@ function onDateChange(selectedDate){
     el.textContent=b.text; el.className="ks "+b.cls;
   });
 
-  // 비교기간 pill + 타이틀
-  const pill = document.getElementById("compare-pill");
-  if(pill) pill.textContent=`비교기간 : ${prevDate||"—"} vs ${selectedDate}`;
+  // 타이틀
   const title = document.getElementById("summary-title");
   if(title&&prevDate) title.textContent=`${DATA_YEAR}/${selectedDate} (${_dayName(selectedDate)}) 요약 — 전일(${prevDate} ${_dayName(prevDate)}) 대비`;
 
