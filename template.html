@@ -138,16 +138,20 @@ tr.twknd:hover td{background:rgba(254,243,199,0.7)}
 #ppc th, #pmo th, #pau th{background:#d4f0e4;color:#0a6e4c;border-bottom-color:#a8dfc8;border-right-color:#a8dfc8;}
 #ppc .cb, #pmo .cb, #pau .cb{border-color:#c0e8d4;}
 @media(max-width:768px){.pg{padding:1rem 1rem 2rem}.kg{grid-template-columns:repeat(2,1fr)}.cg{grid-template-columns:1fr}}
-.build-status{display:none;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#b06d10;background:#faebd4;border:1px solid #e8c87a;border-radius:20px;padding:3px 10px;margin-left:10px}
+.build-status{display:none;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#b06d10;background:#faebd4;border:1px solid #e8c87a;border-radius:20px;padding:4px 12px}
 .build-status.visible{display:inline-flex}
 .build-spinner{width:10px;height:10px;border:2px solid #e8c87a;border-top-color:#b06d10;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
+.build-time{font-size:10px;font-weight:500;color:#92400e;opacity:.85;margin-left:2px}
 </style>
 </head>
 <body>
 <div class="topbar">
-  <div><span class="t-title">크린토피아 <span>홈클리닝</span> · Daily Report</span><span class="pill">데이터 기준 : {{DATA_RANGE}}</span><span class="build-status" id="build-status"><span class="build-spinner"></span>대시보드 업데이트 중...</span></div>
-  <div class="t-meta">{{UPDATE_DATE}}</div>
+  <div><span class="t-title">크린토피아 <span>홈클리닝</span> · Daily Report</span><span class="pill">데이터 기준 : {{DATA_RANGE}}</span></div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span class="build-status" id="build-status"><span class="build-spinner"></span>데이터 업데이트 중<span class="build-time" id="build-time"></span></span>
+    <div class="t-meta">{{UPDATE_DATE}}</div>
+  </div>
 </div>
 <div class="nav">
   <button class="nb nb-sum active" onclick="show('p0',this)">Summary</button>
@@ -1055,6 +1059,36 @@ document.querySelectorAll(".ins-i").forEach(el=>{
 (function() {
   var API = 'https://api.github.com/repos/newmediabcd/homecleaning-dashboard/actions/workflows/deploy.yml/runs?per_page=1';
   var el = document.getElementById('build-status');
+  var timeEl = document.getElementById('build-time');
+  var _timer = null;
+  var _startedAt = null;
+  var AVG_SEC = 150; // 평균 빌드 소요 약 2분 30초
+
+  function _fmt(sec){
+    if(sec < 60) return sec + '초';
+    return Math.floor(sec/60) + '분 ' + (sec%60) + '초';
+  }
+
+  function _startTick(startedAt){
+    _startedAt = new Date(startedAt);
+    if(_timer) clearInterval(_timer);
+    _timer = setInterval(function(){
+      var elapsed = Math.round((Date.now() - _startedAt)/1000);
+      var remain  = Math.max(0, AVG_SEC - elapsed);
+      if(remain > 0){
+        timeEl.textContent = ' · 약 ' + _fmt(remain) + ' 남음';
+      } else {
+        timeEl.textContent = ' · ' + _fmt(elapsed) + ' 경과';
+      }
+    }, 1000);
+  }
+
+  function _stopTick(){
+    if(_timer){ clearInterval(_timer); _timer = null; }
+    _startedAt = null;
+    timeEl.textContent = '';
+  }
+
   function check() {
     fetch(API)
       .then(function(r){ return r.json(); })
@@ -1062,8 +1096,12 @@ document.querySelectorAll(".ins-i").forEach(el=>{
         var run = data.workflow_runs && data.workflow_runs[0];
         if (run && (run.status === 'in_progress' || run.status === 'queued')) {
           el.classList.add('visible');
+          if(!_startedAt){
+            _startTick(run.run_started_at || run.created_at);
+          }
         } else {
           el.classList.remove('visible');
+          _stopTick();
         }
       })
       .catch(function(){});
