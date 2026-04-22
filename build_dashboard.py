@@ -778,13 +778,28 @@ def generate_comments(cd: dict) -> dict:
 
         return f"<strong>{tag}</strong> — {compare_str}{rank_str}"
 
-    # MO 5개
-    for kw in AUTO_BID_KEYWORDS:
-        auto_html.append(f'    <div class="ins-i">{auto_line("MO", kw)}</div>')
-
-    # PC 앞 3개 개별
+    # 앞 3개: MO | PC 2열 배치
     for kw in AUTO_BID_KEYWORDS[:3]:
-        auto_html.append(f'    <div class="ins-i">{auto_line("PC", kw)}</div>')
+        mo_txt = auto_line("MO", kw)
+        pc_txt = auto_line("PC", kw)
+        auto_html.append(
+            f'<div class="auto-group">'
+            f'<div class="auto-kw-label">{kw}</div>'
+            f'<div class="auto-row">'
+            f'<div class="ins-i auto-col">{mo_txt}</div>'
+            f'<div class="ins-i auto-col">{pc_txt}</div>'
+            f'</div></div>'
+        )
+
+    # 뒤 2개: MO만 (PC는 아래 combo로 표시)
+    for kw in AUTO_BID_KEYWORDS[3:]:
+        mo_txt = auto_line("MO", kw)
+        auto_html.append(
+            f'<div class="auto-group">'
+            f'<div class="auto-kw-label">{kw}</div>'
+            f'<div class="ins-i">{mo_txt}</div>'
+            f'</div>'
+        )
 
     # PC 마지막 2개 묶음 (입주청소가격·입주청소전문) — 전일 vs 전전일
     kw1, kw2 = AUTO_BID_KEYWORDS[3], AUTO_BID_KEYWORDS[4]
@@ -849,7 +864,13 @@ def generate_comments(cd: dict) -> dict:
         pc_body = f"{compare_str}{rank_str}"
     else:
         pc_body = "해당 기간 데이터 없음."
-    auto_html.append(f'    <div class="ins-i"><strong>{tag}</strong> — {pc_body}</div>')
+    # PC combo 묶음 그룹으로 출력
+    auto_html.append(
+        f'<div class="auto-group">'
+        f'<div class="auto-kw-label">PC {kw1}·{kw2}</div>'
+        f'<div class="ins-i"><strong>{tag}</strong> — {pc_body}</div>'
+        f'</div>'
+    )
 
     sections["AUTO"] = "\n".join(auto_html)
 
@@ -1140,9 +1161,9 @@ def main():
         d = comment_data["auto"]["MO"][kw]
         if d["is_new"]:
             new_kws.append(f"{kw}({d['start']}~)")
-    title_auto = f"네이버 자동입찰 키워드 인사이트 — {meta['data_start']}~{meta['data_end']}"
+    title_auto = f"네이버 자동입찰 — {curr_str} ({meta['curr_day']}) 전전일 대비"
     if new_kws:
-        title_auto += f" ({', '.join(new_kws)} 신규 추가)"
+        title_auto += f" · {', '.join(new_kws)} 신규"
 
     # ── 표 HTML ──
     print("\n[7] 표 데이터 생성 중...")
