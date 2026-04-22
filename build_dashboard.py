@@ -722,8 +722,7 @@ def generate_comments(cd: dict) -> dict:
     def auto_line(dev, kw_name):
         d = cd["auto"][dev][kw_name]
         rows = [r for r in d["rows"] if r["spend"] > 0]
-        new_tag = f" ★신규({d['start']}~)" if d["is_new"] else ""
-        tag = f"[{dev}] {kw_name}{new_tag}"
+        tag = f"[{dev}] {kw_name}"
 
         if not rows:
             return f"<strong>{tag}</strong> — 해당 기간 데이터 없음."
