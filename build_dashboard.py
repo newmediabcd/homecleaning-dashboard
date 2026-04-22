@@ -778,8 +778,8 @@ def generate_comments(cd: dict) -> dict:
 
         return f"<strong>{tag}</strong> — {compare_str}{rank_str}"
 
-    # 앞 3개: MO | PC 2열 배치
-    for kw in AUTO_BID_KEYWORDS[:3]:
+    # 5개 키워드 모두 MO | PC 2열 배치
+    for kw in AUTO_BID_KEYWORDS:
         mo_txt = auto_line("MO", kw)
         pc_txt = auto_line("PC", kw)
         auto_html.append(
@@ -790,87 +790,6 @@ def generate_comments(cd: dict) -> dict:
             f'<div class="ins-i auto-col">{pc_txt}</div>'
             f'</div></div>'
         )
-
-    # 뒤 2개: MO만 (PC는 아래 combo로 표시)
-    for kw in AUTO_BID_KEYWORDS[3:]:
-        mo_txt = auto_line("MO", kw)
-        auto_html.append(
-            f'<div class="auto-group">'
-            f'<div class="auto-kw-label">{kw}</div>'
-            f'<div class="ins-i">{mo_txt}</div>'
-            f'</div>'
-        )
-
-    # PC 마지막 2개 묶음 (입주청소가격·입주청소전문) — 전일 vs 전전일
-    kw1, kw2 = AUTO_BID_KEYWORDS[3], AUTO_BID_KEYWORDS[4]
-    d1, d2 = cd["auto"]["PC"][kw1], cd["auto"]["PC"][kw2]
-    new_tag = ""
-    if d1["is_new"] or d2["is_new"]:
-        start = d1["start"] or d2["start"]
-        new_tag = f" ★신규({start}~)"
-    tag = f"[PC] {kw1}·{kw2}{new_tag}"
-    rows1 = [r for r in d1["rows"] if r["spend"] > 0]
-    rows2 = [r for r in d2["rows"] if r["spend"] > 0]
-    # 날짜 기준 합산
-    from collections import defaultdict
-    date_map = defaultdict(lambda: {"conv": 0, "spend": 0, "rank_sum": 0, "rank_cnt": 0})
-    for r in rows1 + rows2:
-        dm = date_map[r["date"]]
-        dm["conv"] += r["conv"]
-        dm["spend"] += r["spend"]
-        rk = r.get("rank", 0) or 0
-        if rk > 0:
-            dm["rank_sum"] += rk
-            dm["rank_cnt"] += 1
-    sorted_dates = sorted(date_map.keys())
-    if sorted_dates:
-        def _combo_row(dt):
-            dm = date_map[dt]
-            conv = round(dm["conv"], 1)
-            cpa = int(dm["spend"] / dm["conv"]) if dm["conv"] > 0 else 0
-            rank = round(dm["rank_sum"] / dm["rank_cnt"], 1) if dm["rank_cnt"] > 0 else 0
-            return {"date": dt, "conv": conv, "cpa": cpa, "rank": rank}
-        y_row = _combo_row(sorted_dates[-1])
-        db_row = _combo_row(sorted_dates[-2]) if len(sorted_dates) >= 2 else None
-
-        def _cs(r, label):
-            if r["conv"] > 0:
-                return f"{label}({r['date']}) 전환 {r['conv']}건, CPA {r['cpa']:,}원"
-            return f"{label}({r['date']}) 전환 0건"
-
-        y_s = _cs(y_row, "전일")
-        if db_row:
-            db_s = _cs(db_row, "전전일")
-            if y_row["conv"] > 0 and db_row["conv"] > 0:
-                cpa_lbl = "CPA 개선" if y_row["cpa"] < db_row["cpa"] else "CPA 상승"
-                comp = cpa_lbl + (" · 전환 증가" if y_row["conv"] > db_row["conv"] else " · 전환 감소" if y_row["conv"] < db_row["conv"] else "")
-            elif y_row["conv"] > 0:
-                comp = "전환 발생"
-            elif db_row["conv"] > 0:
-                comp = "전환 미발생"
-            else:
-                comp = "전환 0건 지속"
-            compare_str = f"{y_s} — {db_s} 대비 {comp}."
-        else:
-            compare_str = f"{y_s}."
-
-        if y_row["rank"] > 0 and db_row and db_row["rank"] > 0:
-            rank_dir = "개선" if y_row["rank"] < db_row["rank"] else ("하락" if y_row["rank"] > db_row["rank"] else "유지")
-            rank_str = f" 노출순위 {db_row['rank']}위 → {y_row['rank']}위로 {rank_dir}."
-        elif y_row["rank"] > 0:
-            rank_str = f" 노출순위 {y_row['rank']}위."
-        else:
-            rank_str = ""
-        pc_body = f"{compare_str}{rank_str}"
-    else:
-        pc_body = "해당 기간 데이터 없음."
-    # PC combo 묶음 그룹으로 출력
-    auto_html.append(
-        f'<div class="auto-group">'
-        f'<div class="auto-kw-label">PC {kw1}·{kw2}</div>'
-        f'<div class="ins-i"><strong>{tag}</strong> — {pc_body}</div>'
-        f'</div>'
-    )
 
     sections["AUTO"] = "\n".join(auto_html)
 
