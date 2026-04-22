@@ -219,6 +219,11 @@ def build_all_daily_kpi_json(naver_df, naver_pc_df, naver_mo_df, google_df, goog
             "gb":  _row(gb_sub,  False),
             "gc":  _row(gc_sub,  False),
             "gg":  _row(gg_sub,  False),
+            "npc_kw": _kw_day(naver_pc_df, d),
+            "nmo_kw": _kw_day(naver_mo_df, d),
+            "gb_kw":  _kw_day(google_b_df, d),
+            "gc_kw":  _kw_day(google_c_df, d),
+            "gg_kw":  _kw_day(google_g_df, d),
         }
     return json.dumps(result, ensure_ascii=False)
 
@@ -391,15 +396,22 @@ def _kw_day(df, d, top_n=12):
     sub = df[df["일자"].dt.strftime("%m/%d") == d]
     if len(sub) == 0:
         return []
-    grp = sub.groupby("키워드").agg({"광고비": "sum", "총전환": "sum", "클릭": "sum"}).reset_index()
+    agg_cols = {"광고비": "sum", "총전환": "sum", "클릭": "sum"}
+    if "노출" in sub.columns:
+        agg_cols["노출"] = "sum"
+    grp = sub.groupby("키워드").agg(agg_cols).reset_index()
     grp = grp[grp["광고비"] > 0].sort_values("광고비", ascending=False).head(top_n)
     out = []
     for _, r in grp.iterrows():
         sp, cv, cl = float(r["광고비"]), float(r["총전환"]), int(r["클릭"])
+        imp = int(r["노출"]) if "노출" in grp.columns else 0
         out.append({
-            "kw": r["키워드"], "spend": int(sp), "conv": round(cv, 1),
+            "kw": r["키워드"], "imp": imp, "clk": cl, "spend": int(sp),
+            "conv": round(cv, 1),
+            "ctr": round(cl / imp * 100, 3) if imp > 0 else 0.0,
+            "cpc": int(round(sp / cl)) if cl > 0 else 0,
+            "cvr": round(cv / cl * 100, 2) if cl > 0 else 0.0,
             "cpa": int(round(sp / cv)) if cv > 0 else 0,
-            "cvr": round(cv / cl * 100, 2) if cl > 0 else 0,
         })
     return out
 
