@@ -688,31 +688,43 @@ def generate_comments(cd: dict) -> dict:
           f" — {cpa_vs(nmo['curr']['cpa'], nmo['prev']['cpa'])}."
           + (f" 평일일평균 대비 {pct_mo:+d}%." if pct_mo is not None else ""))
 
-    # 줄3: 네이버 전체 저소진 키워드
-    all_under = {}
-    for sec_key in ["n_pc", "n_mo"]:
+    # 줄3·4: 네이버 SA PC / MO 주요 소진 변화 키워드 (매체별 분리)
+    def under_str(sec_key, label):
         sec_data = cd[sec_key]
         kwa = sec_data.get("kw_wd_avg", {})
+        under = []
         for k in sec_data["kw"]:
             wa_k = kwa.get(k["kw"], 0)
             if wa_k > 0:
                 p2 = pdiff(k["spend"], wa_k)
                 if p2 is not None and p2 < 0:
-                    key = f"[{k['kw']}]"
-                    if key not in all_under or p2 < all_under[key]:
-                        all_under[key] = p2
-    top_under = sorted(all_under.items(), key=lambda x: x[1])[:5]
-    if top_under:
-        kw_str = ", ".join(f"{name} {p2:+d}%" for name, p2 in top_under)
-        s3 = f"주요 소진 변화 키워드 (평일일평균 대비): {kw_str}."
-    else:
-        s3 = "주요 키워드 소진 패턴 전일 대비 변화 없음."
+                    under.append((f"[{k['kw']}]", p2))
+        under = sorted(under, key=lambda x: x[1])[:4]
+        if under:
+            kw_str = ", ".join(f"{name} {p2:+d}%" for name, p2 in under)
+            return f"네이버 SA {label} 주요 소진 변화 키워드 (평일일평균 대비): {kw_str}."
+        return f"네이버 SA {label} 주요 키워드 소진 패턴 변화 없음."
 
-    s4 = (f"구글 SA: {g_cpa_str(gb['curr']['cpa'], gb['prev']['cpa'], '브랜드')}, "
+    s3 = under_str("n_pc", "PC")
+    s4 = under_str("n_mo", "MO")
+
+    # 줄5: 구글 SA 주요 소진 변화 키워드
+    g_all_kw = cd["g_brand"]["kw"] + cd["g_comp"]["kw"] + cd["g_gen"]["kw"]
+    g_inefficient = sorted([k for k in g_all_kw if k["conv"] == 0 and k["spend"] > 20000], key=lambda x: -x["spend"])
+    g_conv_kw = sorted([k for k in g_all_kw if k["conv"] > 0], key=lambda x: x["cpa"])
+    g_parts = []
+    if g_inefficient:
+        g_parts.append(", ".join(f"[{k['kw']}] 광고비 {ko(k['spend'])}, 전환 0건" for k in g_inefficient[:3]))
+    if g_conv_kw:
+        g_parts.append(", ".join(f"[{k['kw']}] 전환 {k['conv']}건(CPA {k['cpa']:,}원)" for k in g_conv_kw[:2]) + "으로 전환 발생")
+    s5 = ("구글 SA 주요 소진 변화 키워드: " + ". ".join(g_parts) + "." if g_parts
+          else "구글 SA 주요 소진 변화 없음.")
+
+    s6 = (f"구글 SA: {g_cpa_str(gb['curr']['cpa'], gb['prev']['cpa'], '브랜드')}, "
           f"{g_cpa_str(gc['curr']['cpa'], gc['prev']['cpa'], '경쟁사')}, "
           f"{g_cpa_str(gg['curr']['cpa'], gg['prev']['cpa'], '일반')}.")
 
-    sections["SUMMARY"] = ins(s1, s2, s3, s4)
+    sections["SUMMARY"] = ins(s1, s2, s3, s4, s5, s6)
 
     # ─────────────────────────────────────
     # 자동입찰
