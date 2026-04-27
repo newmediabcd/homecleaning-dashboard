@@ -114,6 +114,7 @@ def daily_kpi(df: pd.DataFrame, date_str: str) -> dict:
         "spend": spend,
         "conv":  conv,
         "cpa":   round(spend / conv, 0) if conv > 0 else 0,
+        "cpc":   round(spend / clk, 0) if clk > 0 else 0,
         "cvr":   round(conv / clk * 100, 2) if clk > 0 else 0,
     }
 
@@ -210,9 +211,11 @@ def build_all_daily_kpi_json(naver_df, naver_pc_df, naver_mo_df, google_df, goog
             "n_spend": int(n["spend"]),
             "n_conv":  float(round(float(n["conv"]), 1)),
             "n_cpa":   int(n["cpa"]),
+            "n_cpc":   int(n["cpc"]),
             "g_spend": int(g["spend"]),
             "g_conv":  float(round(float(g["conv"]), 1)),
             "g_cpa":   int(g["cpa"]),
+            "g_cpc":   int(g["cpc"]),
             "npc": _row(npc_sub, True),
             "nmo": _row(nmo_sub, True),
             "g":   _row(g_sub,   False),
@@ -392,7 +395,7 @@ def _kpi(df, d):
     }
 
 
-def _kw_day(df, d, top_n=12):
+def _kw_day(df, d, top_n=60):
     sub = df[df["일자"].dt.strftime("%m/%d") == d]
     if len(sub) == 0:
         return []
@@ -400,6 +403,8 @@ def _kw_day(df, d, top_n=12):
     if "노출" in sub.columns:
         agg_cols["노출"] = "sum"
     grp = sub.groupby("키워드").agg(agg_cols).reset_index()
+    # '-' 는 광고그룹 레벨 집계 행 → 제외
+    grp = grp[grp["키워드"] != "-"]
     grp = grp[grp["광고비"] > 0].sort_values("광고비", ascending=False).head(top_n)
     out = []
     for _, r in grp.iterrows():
@@ -422,7 +427,24 @@ def _kw_wd_avg(df, recent_wd):
         return {}
     sub = df[df["일자"].dt.strftime("%m/%d").isin(recent_wd)]
     grp = sub.groupby("키워드")["광고비"].sum().reset_index()
+    grp = grp[grp["키워드"] != "-"]
     return {r["키워드"]: int(r["광고비"] / len(recent_wd)) for _, r in grp.iterrows() if r["광고비"] > 0}
+
+
+_BRAND_KW   = ["크린토피아"]
+_REGION_KW  = ["서울", "부산", "대전", "인천", "수원", "성남", "강동", "송파", "울산",
+                "청주", "용인", "광주", "대구", "경기", "경남", "강서", "마포"]
+_MAIN_KW    = ["입주청소", "이사청소", "아파트입주청소", "이사입주청소"]
+
+def _kw_type(kw_name: str) -> str:
+    """키워드명으로 유형 추정"""
+    if any(w in kw_name for w in _BRAND_KW):
+        return "브랜드"
+    if any(w in kw_name for w in _REGION_KW):
+        return "지역"
+    if kw_name in _MAIN_KW:
+        return "메인"
+    return "롱테일"
 
 
 # ══════════════════════════════════════════
@@ -448,11 +470,12 @@ def _agg_kpi(df, date_strs):
     return {
         "spend": int(sp), "conv": round(float(cv), 1),
         "cpa": int(round(sp / cv)) if cv > 0 else 0,
+        "cpc": int(round(sp / cl)) if cl > 0 else 0,
         "cvr": round(float(cv) / cl * 100, 2) if cl > 0 else 0,
     }
 
 
-def _agg_kw(df, date_strs, top_n=12):
+def _agg_kw(df, date_strs, top_n=60):
     """여러 날짜 합산 키워드별 KPI"""
     sub = df[df["일자"].dt.strftime("%m/%d").isin(date_strs)]
     if len(sub) == 0:
@@ -461,6 +484,8 @@ def _agg_kw(df, date_strs, top_n=12):
     if "노출" in sub.columns:
         agg_cols["노출"] = "sum"
     grp = sub.groupby("키워드").agg(agg_cols).reset_index()
+    # '-' 는 광고그룹 레벨 집계 행 → 제외
+    grp = grp[grp["키워드"] != "-"]
     grp = grp[grp["광고비"] > 0].sort_values("광고비", ascending=False).head(top_n)
     out = []
     for _, r in grp.iterrows():
@@ -469,6 +494,8 @@ def _agg_kw(df, date_strs, top_n=12):
         out.append({
             "kw": r["키워드"], "imp": imp, "clk": cl, "spend": int(sp),
             "conv": round(cv, 1),
+            "cpc": int(round(sp / cl)) if cl > 0 else 0,
+            "cvr": round(cv / cl * 100, 2) if cl > 0 else 0.0,
             "cpa": int(round(sp / cv)) if cv > 0 else 0,
         })
     return out
@@ -585,12 +612,14 @@ def build_comment_data(naver_pc, naver_mo, google_brand, google_comp, google_gen
                 "prev": _agg_kpi(df, prev_wk),
                 "wd_avg": wd_avg(df),
                 "kw": _agg_kw(kw_df, curr_wk),
+                "kw_prev": _agg_kw(kw_df, prev_wk),
                 "kw_wd_avg": _kw_wd_avg(kw_df, recent_wd),
             }
         return {
             "curr": _kpi(df, curr), "prev": _kpi(df, prev),
             "wd_avg": wd_avg(df),
             "kw": _kw_day(kw_df, curr),
+            "kw_prev": None,
             "kw_wd_avg": _kw_wd_avg(kw_df, recent_wd),
         }
 
@@ -651,6 +680,7 @@ def generate_comments(cd: dict, is_weekend: bool = False) -> dict:
     # ─────────────────────────────────────
     s = cd["n_pc"]
     c, p, wa, kw, kwa = s["curr"], s["prev"], s["wd_avg"], s["kw"], s.get("kw_wd_avg", {})
+    kw_prev_list = s.get("kw_prev") or []
 
     # 줄1: KPI + 전일 대비 + 목표
     l1 = f"광고비 {ko(c['spend'])}, 전환 {c['conv']}건, CPA {c['cpa']:,}원 — {cpa_vs(c['cpa'], p['cpa'])}. {goal(c['cpa'])}."
@@ -677,13 +707,48 @@ def generate_comments(cd: dict, is_weekend: bool = False) -> dict:
     else:
         l3 = "당일 전환 발생 키워드 없음."
 
-    sections["N_PC"] = ins(l1, l2, l3)
+    # 특이사항: 평일일평균 대비 5만원 이상 감소/과소진 시 키워드 세부 분석
+    l_pc_special = None
+    if wa['spend'] > 0 and abs(c['spend'] - wa['spend']) >= 50000:
+        direction = "저소진" if c['spend'] < wa['spend'] else "과소진"
+        # 평일 대비 변화 폭 상위 키워드
+        kw_diff = [(k, pdiff(k['spend'], kwa.get(k['kw'], 0))) for k in kw if kwa.get(k['kw'], 0) > 0]
+        kw_diff = sorted(kw_diff, key=lambda x: abs(x[1]) if x[1] is not None else 0, reverse=True)[:2]
+        parts1 = []
+        for k, p2 in kw_diff:
+            if p2 is not None:
+                kt = _kw_type(k['kw'])
+                parts1.append(
+                    f"[{k['kw']}]({kt} 키워드) 평일 {ko(kwa[k['kw']])} → 당일 {ko(k['spend'])}({p2:+d}%),"
+                    f" 클릭 {k['clk']}회, CPC {k['cpc']:,}원, 전환 {k['conv']}건"
+                )
+        if parts1:
+            l_pc_special = f"[특이사항] PC 광고비 평일일평균 대비 {direction}. " + " / ".join(parts1) + "."
+        # 주말: 전주 주말 대비 추가
+        if is_weekend and kw_prev_list:
+            kw_prev_map = {k['kw']: k for k in kw_prev_list}
+            parts2 = []
+            for k in sorted(kw, key=lambda x: -x['spend'])[:3]:
+                pk = kw_prev_map.get(k['kw'])
+                if pk and pk['spend'] > 0:
+                    p2 = pdiff(k['spend'], pk['spend'])
+                    if p2 is not None and abs(p2) >= 15:
+                        parts2.append(
+                            f"[{k['kw']}] 이번주말 {ko(k['spend'])}/전주 {ko(pk['spend'])}({p2:+d}%),"
+                            f" CPC {pk['cpc']:,}원→{k['cpc']:,}원, 전환 {k['conv']}건"
+                        )
+            if parts2:
+                suffix = " 전주 주말 대비: " + " / ".join(parts2) + "."
+                l_pc_special = (l_pc_special or "") + suffix
+
+    sections["N_PC"] = ins(l1, l2, l3, l_pc_special)
 
     # ─────────────────────────────────────
     # 네이버 MO
     # ─────────────────────────────────────
     s = cd["n_mo"]
     c, p, wa, kw, kwa = s["curr"], s["prev"], s["wd_avg"], s["kw"], s.get("kw_wd_avg", {})
+    kw_prev_list_mo = s.get("kw_prev") or []
 
     pct = pdiff(c['spend'], wa['spend'])
     pct_str = f" MO 광고비 평일일평균({ko(wa['spend'])}) 대비 {pct:+d}%{'  저소진' if pct and pct < 0 else ''}." if pct is not None else ""
@@ -715,7 +780,40 @@ def generate_comments(cd: dict, is_weekend: bool = False) -> dict:
     else:
         l4 = "당일 전환 발생 키워드 없음."
 
-    sections["N_MO"] = ins(l1, l2, l3, l4)
+    # 특이사항: 평일일평균 대비 10만원 이상 감소/과소진 시 키워드 세부 분석
+    l_mo_special = None
+    if wa['spend'] > 0 and abs(c['spend'] - wa['spend']) >= 100000:
+        direction = "저소진" if c['spend'] < wa['spend'] else "과소진"
+        kw_diff = [(k, pdiff(k['spend'], kwa.get(k['kw'], 0))) for k in kw if kwa.get(k['kw'], 0) > 0]
+        kw_diff = sorted(kw_diff, key=lambda x: abs(x[1]) if x[1] is not None else 0, reverse=True)[:3]
+        parts1 = []
+        for k, p2 in kw_diff:
+            if p2 is not None:
+                kt = _kw_type(k['kw'])
+                parts1.append(
+                    f"[{k['kw']}]({kt} 키워드) 평일 {ko(kwa[k['kw']])} → 당일 {ko(k['spend'])}({p2:+d}%),"
+                    f" 클릭 {k['clk']}회, CPC {k['cpc']:,}원, 전환 {k['conv']}건"
+                )
+        if parts1:
+            l_mo_special = f"[특이사항] MO 광고비 평일일평균 대비 {direction}. " + " / ".join(parts1) + "."
+        # 주말: 전주 주말 대비 추가
+        if is_weekend and kw_prev_list_mo:
+            kw_prev_map = {k['kw']: k for k in kw_prev_list_mo}
+            parts2 = []
+            for k in sorted(kw, key=lambda x: -x['spend'])[:3]:
+                pk = kw_prev_map.get(k['kw'])
+                if pk and pk['spend'] > 0:
+                    p2 = pdiff(k['spend'], pk['spend'])
+                    if p2 is not None and abs(p2) >= 15:
+                        parts2.append(
+                            f"[{k['kw']}] 이번주말 {ko(k['spend'])}/전주 {ko(pk['spend'])}({p2:+d}%),"
+                            f" CPC {pk['cpc']:,}원→{k['cpc']:,}원, 전환 {k['conv']}건"
+                        )
+            if parts2:
+                suffix = " 전주 주말 대비: " + " / ".join(parts2) + "."
+                l_mo_special = (l_mo_special or "") + suffix
+
+    sections["N_MO"] = ins(l1, l2, l3, l4, l_mo_special)
 
     # ─────────────────────────────────────
     # 구글 브랜드
@@ -1115,6 +1213,7 @@ def build_all_comments_json(naver_pc, naver_mo, google_brand, google_comp, googl
                 "curr": _kpi(df, _curr), "prev": _kpi(df, _prev),
                 "wd_avg": wd_avg_for(df, _rwd),
                 "kw": _kw_day(kw_df, _curr),
+                "kw_prev": None,
                 "kw_wd_avg": _kw_wd_avg(kw_df, _rwd),
             }
 
@@ -1343,8 +1442,10 @@ def main():
 
     n_spend_txt, n_spend_cls = diff_badge(n_curr["spend"], n_prev["spend"], prev_label=prev_label)
     n_cpa_txt,   n_cpa_cls   = diff_badge(n_curr["cpa"],   n_prev["cpa"],   reverse=True, prev_label=prev_label)
+    n_cpc_txt,   n_cpc_cls   = diff_badge(n_curr["cpc"],   n_prev["cpc"],   reverse=True, prev_label=prev_label)
     g_spend_txt, g_spend_cls = diff_badge(g_curr["spend"], g_prev["spend"], prev_label=prev_label)
     g_cpa_txt,   g_cpa_cls   = diff_badge(g_curr["cpa"],   g_prev["cpa"],   reverse=True, prev_label=prev_label)
+    g_cpc_txt,   g_cpc_cls   = diff_badge(g_curr["cpc"],   g_prev["cpc"],   reverse=True, prev_label=prev_label)
 
     print(f"  네이버 CPA: {int(n_curr['cpa']):,}원  /  구글 CPA: {int(g_curr['cpa']):,}원")
 
@@ -1434,12 +1535,18 @@ def main():
         "N_CPA":        f"{int(n_curr['cpa']):,}원",
         "N_CPA_DIFF":   n_cpa_txt,
         "N_CPA_CLS":    n_cpa_cls,
+        "N_CPC":        f"{int(n_curr['cpc']):,}원",
+        "N_CPC_DIFF":   n_cpc_txt,
+        "N_CPC_CLS":    n_cpc_cls,
         "G_SPEND":      fmt_spend(g_curr["spend"]),
         "G_SPEND_DIFF": g_spend_txt,
         "G_SPEND_CLS":  g_spend_cls,
         "G_CPA":        f"{int(g_curr['cpa']):,}원",
         "G_CPA_DIFF":   g_cpa_txt,
         "G_CPA_CLS":    g_cpa_cls,
+        "G_CPC":        f"{int(g_curr['cpc']):,}원",
+        "G_CPC_DIFF":   g_cpc_txt,
+        "G_CPC_CLS":    g_cpc_cls,
 
         # JS 날짜/색상 배열
         "JS_L7":    js_l7,
