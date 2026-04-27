@@ -580,7 +580,10 @@ function renderFilterTable(kw){
     const row=autoDetail[dev][kw];
     const tb=document.getElementById(tid);
     tb.innerHTML="";
+    const firstSpend=L15.findIndex((_,i)=>row.spend[i]>0||row.clk[i]>0);
+    const startIdx=firstSpend>=0?firstSpend:0;
     L15.forEach((d,i)=>{
+      if(i<startIdx) return;
       const tr=document.createElement("tr");
       if(d===_currAutoDate) tr.classList.add("tnew-g");
       const cpa=row.cpa[i];
@@ -1038,6 +1041,18 @@ const _initDate = PL[PL.length-1];
 const _initWk = _isWeekend(_initDate) ? _weekendDates(_initDate) : null;
 _buildSummaryCharts(_initDate, _initWk);
 _updateBarColors(_initDate, _initWk);
+
+// SUMMARY·AUTO 코멘트 초기화 — allComments에서 로드 (주말 시 전주 주말 기준 반영)
+(function(){
+  const _cmtDate = (_initWk && _initWk.length > 1) ? _initWk[0] : _initDate;
+  const _cmt = allComments[_cmtDate] || allComments[_initDate];
+  if(_cmt){
+    [["cmt-p0","SUMMARY"],["cmt-au","AUTO"]].forEach(function(pair){
+      const el = document.getElementById(pair[0]);
+      if(el && _cmt[pair[1]] != null) el.innerHTML = _cmt[pair[1]];
+    });
+  }
+})();
 
 // 섹션 날짜 드롭다운 초기화
 (function(){

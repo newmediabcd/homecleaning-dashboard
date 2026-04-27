@@ -122,19 +122,19 @@ def fmt_spend(val: float) -> str:
     return f"{val/10000:.1f}만원"
 
 
-def diff_badge(curr_val, prev_val, reverse=False) -> tuple:
+def diff_badge(curr_val, prev_val, reverse=False, prev_label="전일") -> tuple:
     """(표시문자열, CSS클래스)  reverse=True → 수치가 낮을수록 좋음(CPA 등)"""
     if prev_val == 0:
-        return "전일 대비 —", "kn"
+        return f"{prev_label} 대비 —", "kn"
     pct = round((curr_val - prev_val) / prev_val * 100)
     sign = "+" if pct >= 0 else ""
     if reverse:
         cls = "ku" if curr_val < prev_val else "kd"
         label = "개선" if curr_val < prev_val else "상승"
-        return f"전일 {fmt_spend(prev_val) if prev_val>9999 else f'{int(prev_val):,}원'} 대비 {label}", cls
+        return f"{prev_label} {fmt_spend(prev_val) if prev_val>9999 else f'{int(prev_val):,}원'} 대비 {label}", cls
     else:
         cls = "ku" if pct < 0 else "kd"
-        return f"전일 {fmt_spend(prev_val)} 대비 {sign}{pct}%", cls
+        return f"{prev_label} {fmt_spend(prev_val)} 대비 {sign}{pct}%", cls
 
 
 # ══════════════════════════════════════════
@@ -425,9 +425,88 @@ def _kw_wd_avg(df, recent_wd):
     return {r["키워드"]: int(r["광고비"] / len(recent_wd)) for _, r in grp.iterrows() if r["광고비"] > 0}
 
 
+# ══════════════════════════════════════════
+# 주말 합산 헬퍼
+# ══════════════════════════════════════════
+
+def _is_weekend(dt) -> bool:
+    """금(4)·토(5)·일(6) 여부"""
+    return dt.weekday() >= 4
+
+
+def _weekend_range(curr_dt, offset_weeks=0):
+    """curr_dt 기준 주말 금~일 날짜 문자열 3개 반환 (offset_weeks=-1 이면 전주)"""
+    wd = curr_dt.weekday()  # 4=금, 5=토, 6=일
+    fri = curr_dt - pd.Timedelta(days=wd - 4) + pd.Timedelta(weeks=offset_weeks)
+    return [(fri + pd.Timedelta(days=k)).strftime("%m/%d") for k in range(3)]
+
+
+def _agg_kpi(df, date_strs):
+    """여러 날짜 합산 KPI"""
+    sub = df[df["일자"].dt.strftime("%m/%d").isin(date_strs)]
+    sp = sub["광고비"].sum(); cv = sub["총전환"].sum(); cl = sub["클릭"].sum()
+    return {
+        "spend": int(sp), "conv": round(float(cv), 1),
+        "cpa": int(round(sp / cv)) if cv > 0 else 0,
+        "cvr": round(float(cv) / cl * 100, 2) if cl > 0 else 0,
+    }
+
+
+def _agg_kw(df, date_strs, top_n=12):
+    """여러 날짜 합산 키워드별 KPI"""
+    sub = df[df["일자"].dt.strftime("%m/%d").isin(date_strs)]
+    if len(sub) == 0:
+        return []
+    agg_cols = {"광고비": "sum", "총전환": "sum", "클릭": "sum"}
+    if "노출" in sub.columns:
+        agg_cols["노출"] = "sum"
+    grp = sub.groupby("키워드").agg(agg_cols).reset_index()
+    grp = grp[grp["광고비"] > 0].sort_values("광고비", ascending=False).head(top_n)
+    out = []
+    for _, r in grp.iterrows():
+        sp, cv, cl = float(r["광고비"]), float(r["총전환"]), int(r["클릭"])
+        imp = int(r["노출"]) if "노출" in grp.columns else 0
+        out.append({
+            "kw": r["키워드"], "imp": imp, "clk": cl, "spend": int(sp),
+            "conv": round(cv, 1),
+            "cpa": int(round(sp / cv)) if cv > 0 else 0,
+        })
+    return out
+
+
+def _agg_auto(naver_df, dev, kw, date_strs):
+    """여러 날짜의 자동입찰 키워드 집계 (주말 합산용)"""
+    sub = naver_df[
+        (naver_df["디바이스"] == dev) &
+        (naver_df["키워드"] == kw) &
+        (naver_df["일자"].dt.strftime("%m/%d").isin(date_strs))
+    ]
+    if len(sub) == 0:
+        return {"spend": 0, "conv": 0.0, "cpa": 0, "rank": 0}
+    sp = int(sub["광고비"].sum())
+    cv = float(sub["총전환"].sum())
+    rank_vals = sub["평균노출순위"].dropna()
+    rank_vals = rank_vals[rank_vals > 0]
+    return {
+        "spend": sp,
+        "conv": round(cv, 1),
+        "cpa": int(round(sp / cv)) if cv > 0 else 0,
+        "rank": round(float(rank_vals.mean()), 1) if len(rank_vals) > 0 else 0,
+    }
+
+
 def build_comment_data(naver_pc, naver_mo, google_brand, google_comp, google_gen,
                        naver_df, meta, all_dates):
     curr, prev = meta["curr_str"], meta["prev_str"]
+
+    # 주말 여부 및 날짜 범위 계산
+    curr_dt = meta["curr"]
+    is_wknd = _is_weekend(curr_dt)
+    if is_wknd:
+        curr_wk = _weekend_range(curr_dt, 0)   # 이번 주말 금~일
+        prev_wk = _weekend_range(curr_dt, -1)  # 전주 주말 금~일
+    else:
+        curr_wk = prev_wk = []
 
     # 최근 평일(월~금) 5일 (당일 제외)
     recent_wd = [
@@ -485,7 +564,29 @@ def build_comment_data(naver_pc, naver_mo, google_brand, google_comp, google_gen
 
     auto_data = {dev: {kw: auto_kw_rows(dev, kw) for kw in AUTO_BID_KEYWORDS} for dev in ["MO", "PC"]}
 
+    # 주말 자동입찰 집계 데이터
+    auto_weekend = None
+    if is_wknd:
+        auto_weekend = {
+            dev: {
+                kw: {
+                    "this": _agg_auto(naver_df, dev, kw, curr_wk),
+                    "prev": _agg_auto(naver_df, dev, kw, prev_wk),
+                }
+                for kw in AUTO_BID_KEYWORDS
+            }
+            for dev in ["MO", "PC"]
+        }
+
     def sec(df, kw_df):
+        if is_wknd:
+            return {
+                "curr": _agg_kpi(df, curr_wk),
+                "prev": _agg_kpi(df, prev_wk),
+                "wd_avg": wd_avg(df),
+                "kw": _agg_kw(kw_df, curr_wk),
+                "kw_wd_avg": _kw_wd_avg(kw_df, recent_wd),
+            }
         return {
             "curr": _kpi(df, curr), "prev": _kpi(df, prev),
             "wd_avg": wd_avg(df),
@@ -493,21 +594,32 @@ def build_comment_data(naver_pc, naver_mo, google_brand, google_comp, google_gen
             "kw_wd_avg": _kw_wd_avg(kw_df, recent_wd),
         }
 
+    def sec_google(df):
+        if is_wknd:
+            return {"curr": _agg_kpi(df, curr_wk), "prev": _agg_kpi(df, prev_wk), "kw": _agg_kw(df, curr_wk)}
+        return {"curr": _kpi(df, curr), "prev": _kpi(df, prev), "kw": _kw_day(df, curr)}
+
     return {
         "curr": curr, "curr_day": meta["curr_day"],
         "prev": prev, "prev_day": meta["prev_day"],
+        "is_weekend": is_wknd,
+        "curr_wk": curr_wk,
+        "prev_wk": prev_wk,
         "data_range": f"{meta['data_start']}~{meta['data_end']}",
         "n_pc":    sec(naver_pc, naver_pc),
         "n_mo":    sec(naver_mo, naver_mo),
-        "g_brand": {"curr": _kpi(google_brand, curr), "prev": _kpi(google_brand, prev), "kw": _kw_day(google_brand, curr)},
-        "g_comp":  {"curr": _kpi(google_comp,  curr), "prev": _kpi(google_comp,  prev), "kw": _kw_day(google_comp,  curr)},
-        "g_gen":   {"curr": _kpi(google_gen,   curr), "prev": _kpi(google_gen,   prev), "kw": _kw_day(google_gen,   curr)},
+        "g_brand": sec_google(google_brand),
+        "g_comp":  sec_google(google_comp),
+        "g_gen":   sec_google(google_gen),
         "auto": auto_data,
+        "auto_weekend": auto_weekend,
     }
 
 
-def generate_comments(cd: dict) -> dict:
+def generate_comments(cd: dict, is_weekend: bool = False) -> dict:
     """규칙 기반 섹션별 코멘트 생성 (API 불필요)"""
+
+    cmp_label = "전주 주말" if is_weekend else "전일"
 
     # ── 공통 헬퍼 ──
     def ko(v):
@@ -516,8 +628,8 @@ def generate_comments(cd: dict) -> dict:
 
     def cpa_vs(curr_cpa, prev_cpa):
         if prev_cpa == 0:
-            return "전일 데이터 없음"
-        return f"전일({prev_cpa:,}원) 대비 {'개선' if curr_cpa < prev_cpa else '상승'}"
+            return f"{cmp_label} 데이터 없음"
+        return f"{cmp_label}({prev_cpa:,}원) 대비 {'개선' if curr_cpa < prev_cpa else '상승'}"
 
     def goal(cpa):
         if cpa == 0:
@@ -677,7 +789,7 @@ def generate_comments(cd: dict) -> dict:
         if curr_cpa == 0:
             return f"{label} 전환 0건"
         delta = '개선' if curr_cpa < prev_cpa else '상승'
-        return f"{label} CPA {curr_cpa:,}원(전일 {prev_cpa:,}원 대비 {delta})"
+        return f"{label} CPA {curr_cpa:,}원({cmp_label} {prev_cpa:,}원 대비 {delta})"
 
     pct_pc = pdiff(npc["curr"]["spend"], npc["wd_avg"]["spend"])
     pct_mo = pdiff(nmo["curr"]["spend"], nmo["wd_avg"]["spend"])
@@ -732,9 +844,48 @@ def generate_comments(cd: dict) -> dict:
     auto_html = []
 
     def auto_line(dev, kw_name):
+        tag = f"[{dev}] {kw_name}"
+
+        # ── 주말 모드: 전주 주말 합산 대비 ──
+        if is_weekend and cd.get("auto_weekend"):
+            wk = cd["auto_weekend"][dev][kw_name]
+            this = wk["this"]
+            prev_wk_data = wk["prev"]
+
+            def _wk_str(data, label):
+                cv = data["conv"]
+                return (f"{label} 전환 {cv}건, CPA {data['cpa']:,}원"
+                        if cv > 0 else f"{label} 전환 0건")
+
+            this_str = _wk_str(this, "이번주말 합산")
+            prev_str_a = _wk_str(prev_wk_data, "전주 주말 합산")
+            this_cv, prev_cv = this["conv"], prev_wk_data["conv"]
+            this_cpa, prev_cpa_wk = this["cpa"], prev_wk_data["cpa"]
+
+            if this_cv > 0 and prev_cv > 0:
+                cpa_lbl = "CPA 개선" if this_cpa < prev_cpa_wk else "CPA 상승"
+                if this_cv > prev_cv:   comp = f"{cpa_lbl} · 전환 증가"
+                elif this_cv < prev_cv: comp = f"{cpa_lbl} · 전환 감소"
+                else:                   comp = cpa_lbl
+            elif this_cv > 0: comp = "전환 발생"
+            elif prev_cv > 0: comp = "전환 미발생"
+            else:             comp = "주말 3일 전환 0건 지속"
+
+            compare_str = f"{this_str} — {prev_str_a} 대비 {comp}."
+            this_rank = this.get("rank", 0) or 0
+            prev_rank = prev_wk_data.get("rank", 0) or 0
+            if this_rank > 0 and prev_rank > 0:
+                rank_dir = "개선" if this_rank < prev_rank else ("하락" if this_rank > prev_rank else "유지")
+                rank_str = f" 노출순위 전주 평균 {prev_rank}위 → 이번주 {this_rank}위로 {rank_dir}."
+            elif this_rank > 0:
+                rank_str = f" 노출순위 이번주말 평균 {this_rank}위."
+            else:
+                rank_str = ""
+            return f"<strong>{tag}</strong> — {compare_str}{rank_str}"
+
+        # ── 평일 모드 ──
         d = cd["auto"][dev][kw_name]
         rows = [r for r in d["rows"] if r["spend"] > 0]
-        tag = f"[{dev}] {kw_name}"
 
         if not rows:
             return f"<strong>{tag}</strong> — 해당 기간 데이터 없음."
@@ -813,36 +964,121 @@ def build_all_comments_json(naver_pc, naver_mo, google_brand, google_comp, googl
     year = meta["curr"].year
     day_ko = ["월","화","수","목","금","토","일"]
     result = {}
+    weekend_cache = {}  # 이번주 금요일 날짜 → 코멘트 dict (같은 주말은 동일 코멘트)
 
     for i, curr in enumerate(all_dates):
-        prev = all_dates[i - 1] if i > 0 else curr
-
-        # curr_day, prev_day 계산
         try:
             curr_dt = pd.Timestamp(f"{year}-{curr.replace('/', '-')}")
-            prev_dt = pd.Timestamp(f"{year}-{prev.replace('/', '-')}")
             curr_day = day_ko[curr_dt.weekday()]
+        except Exception:
+            curr_dt = None
+            curr_day = ""
+
+        is_wknd = curr_dt is not None and _is_weekend(curr_dt)
+
+        # ── 주말 모드 ──
+        if is_wknd:
+            curr_wk_dates = _weekend_range(curr_dt, 0)
+            prev_wk_dates = _weekend_range(curr_dt, -1)
+            fri_key = curr_wk_dates[0]
+
+            if fri_key in weekend_cache:
+                result[curr] = weekend_cache[fri_key]
+                continue
+
+            recent_wd = [
+                d for d in all_dates[:i]
+                if pd.Timestamp(f"{year}-{d.replace('/', '-')}").weekday() < 5
+            ][-5:]
+
+            def wd_avg_wk(df, _rwd=recent_wd):
+                vals = [_kpi(df, d) for d in _rwd]
+                if not vals:
+                    return {"spend": 0, "conv": 0, "cpa": 0, "dates": ""}
+                sp = int(sum(v["spend"] for v in vals) / len(vals))
+                cv = round(sum(v["conv"] for v in vals) / len(vals), 1)
+                cpa_vals = [v["cpa"] for v in vals if v["cpa"] > 0]
+                return {
+                    "spend": sp, "conv": cv,
+                    "cpa": int(sum(cpa_vals)/len(cpa_vals)) if cpa_vals else 0,
+                    "dates": f"{_rwd[0]}~{_rwd[-1]}" if _rwd else "",
+                }
+
+            def sec_for_wk(df, kw_df, _cw=curr_wk_dates, _pw=prev_wk_dates, _rwd=recent_wd):
+                return {
+                    "curr": _agg_kpi(df, _cw),
+                    "prev": _agg_kpi(df, _pw),
+                    "wd_avg": wd_avg_wk(df, _rwd),
+                    "kw": _agg_kw(kw_df, _cw),
+                    "kw_wd_avg": _kw_wd_avg(kw_df, _rwd),
+                }
+
+            def sec_g_wk(df, _cw=curr_wk_dates, _pw=prev_wk_dates):
+                return {
+                    "curr": _agg_kpi(df, _cw),
+                    "prev": _agg_kpi(df, _pw),
+                    "kw": _agg_kw(df, _cw),
+                }
+
+            auto_weekend = {
+                dev: {
+                    kw: {
+                        "this": _agg_auto(naver_df, dev, kw, curr_wk_dates),
+                        "prev": _agg_auto(naver_df, dev, kw, prev_wk_dates),
+                    }
+                    for kw in AUTO_BID_KEYWORDS
+                }
+                for dev in ["MO", "PC"]
+            }
+
+            cd = {
+                "curr": curr, "curr_day": curr_day,
+                "prev": prev_wk_dates[0], "prev_day": "금",
+                "is_weekend": True,
+                "curr_wk": curr_wk_dates,
+                "prev_wk": prev_wk_dates,
+                "data_range": f"{all_dates[0]}~{all_dates[-1]}",
+                "n_pc":    sec_for_wk(naver_pc, naver_pc),
+                "n_mo":    sec_for_wk(naver_mo, naver_mo),
+                "g_brand": sec_g_wk(google_brand),
+                "g_comp":  sec_g_wk(google_comp),
+                "g_gen":   sec_g_wk(google_gen),
+                "auto": {},
+                "auto_weekend": auto_weekend,
+            }
+
+            comments = generate_comments(cd, is_weekend=True)
+            weekend_cache[fri_key] = comments
+            result[curr] = comments
+            continue
+
+        # ── 평일 모드 ──
+        prev = all_dates[i - 1] if i > 0 else curr
+        try:
+            prev_dt = pd.Timestamp(f"{year}-{prev.replace('/', '-')}")
             prev_day = day_ko[prev_dt.weekday()]
         except Exception:
-            curr_day = prev_day = ""
+            prev_day = ""
 
-        # 해당 날짜 기준 recent_wd: curr 이전 평일 5일
         recent_wd = [
             d for d in all_dates[:i]
             if pd.Timestamp(f"{year}-{d.replace('/', '-')}").weekday() < 5
         ][-5:]
 
-        def wd_avg_for(df):
-            vals = [_kpi(df, d) for d in recent_wd]
+        def wd_avg_for(df, _rwd=recent_wd):
+            vals = [_kpi(df, d) for d in _rwd]
             if not vals:
-                return {"spend": 0, "conv": 0, "cpa": 0}
+                return {"spend": 0, "conv": 0, "cpa": 0, "dates": ""}
             sp = int(sum(v["spend"] for v in vals) / len(vals))
             cv = round(sum(v["conv"] for v in vals) / len(vals), 1)
             cpa_vals = [v["cpa"] for v in vals if v["cpa"] > 0]
-            return {"spend": sp, "conv": cv, "cpa": int(sum(cpa_vals)/len(cpa_vals)) if cpa_vals else 0}
+            return {
+                "spend": sp, "conv": cv,
+                "cpa": int(sum(cpa_vals)/len(cpa_vals)) if cpa_vals else 0,
+                "dates": f"{_rwd[0]}~{_rwd[-1]}" if _rwd else "",
+            }
 
-        def auto_kw_rows_for(dev, kw):
-            # first_spend: 전체 기간에서 최초 광고비 발생일
+        def auto_kw_rows_for(dev, kw, _i=i):
             first_spend = None
             for d in all_dates:
                 sub = naver_df[
@@ -853,8 +1089,7 @@ def build_all_comments_json(naver_pc, naver_mo, google_brand, google_comp, googl
                     first_spend = d
                     break
             is_new = first_spend and first_spend > all_dates[0]
-            # recent5: curr 포함 직전 5일
-            recent5 = all_dates[max(0, i-4):i+1]
+            recent5 = all_dates[max(0, _i-4):_i+1]
             rows = []
             for d in recent5:
                 sub = naver_df[
@@ -875,17 +1110,18 @@ def build_all_comments_json(naver_pc, naver_mo, google_brand, google_comp, googl
                 })
             return {"rows": rows, "is_new": is_new, "start": first_spend}
 
-        def sec_for(df, kw_df):
+        def sec_for(df, kw_df, _curr=curr, _prev=prev, _rwd=recent_wd):
             return {
-                "curr": _kpi(df, curr), "prev": _kpi(df, prev),
-                "wd_avg": wd_avg_for(df),
-                "kw": _kw_day(kw_df, curr),
-                "kw_wd_avg": _kw_wd_avg(kw_df, recent_wd),
+                "curr": _kpi(df, _curr), "prev": _kpi(df, _prev),
+                "wd_avg": wd_avg_for(df, _rwd),
+                "kw": _kw_day(kw_df, _curr),
+                "kw_wd_avg": _kw_wd_avg(kw_df, _rwd),
             }
 
         cd = {
             "curr": curr, "curr_day": curr_day,
             "prev": prev, "prev_day": prev_day,
+            "is_weekend": False,
             "data_range": f"{all_dates[0]}~{all_dates[-1]}",
             "n_pc":    sec_for(naver_pc, naver_pc),
             "n_mo":    sec_for(naver_mo, naver_mo),
@@ -893,9 +1129,10 @@ def build_all_comments_json(naver_pc, naver_mo, google_brand, google_comp, googl
             "g_comp":  {"curr": _kpi(google_comp,  curr), "prev": _kpi(google_comp,  prev), "kw": _kw_day(google_comp,  curr)},
             "g_gen":   {"curr": _kpi(google_gen,   curr), "prev": _kpi(google_gen,   prev), "kw": _kw_day(google_gen,   curr)},
             "auto": {dev: {kw: auto_kw_rows_for(dev, kw) for kw in AUTO_BID_KEYWORDS} for dev in ["MO", "PC"]},
+            "auto_weekend": None,
         }
 
-        result[curr] = generate_comments(cd)
+        result[curr] = generate_comments(cd, is_weekend=False)
 
     return json.dumps(result, ensure_ascii=False)
 
@@ -1080,17 +1317,34 @@ def main():
     naver_pc = naver[naver["디바이스"] == "PC"]
     naver_mo = naver[naver["디바이스"] == "MO"]
 
+    # ── 주말 여부 판단 ──
+    curr_dt_obj = meta["curr"]
+    is_curr_weekend = _is_weekend(curr_dt_obj)
+    if is_curr_weekend:
+        curr_wk = _weekend_range(curr_dt_obj, 0)
+        prev_wk = _weekend_range(curr_dt_obj, -1)
+        prev_label = "전주 주말"
+    else:
+        curr_wk = prev_wk = []
+        prev_label = "전일"
+
     # ── KPI 계산 ──
     print("\n[3] KPI 계산 중...")
-    n_curr = daily_kpi(naver, curr_str)
-    n_prev = daily_kpi(naver, prev_str)
-    g_curr = daily_kpi(google, curr_str)
-    g_prev = daily_kpi(google, prev_str)
+    if is_curr_weekend:
+        n_curr = _agg_kpi(naver, curr_wk)
+        n_prev = _agg_kpi(naver, prev_wk)
+        g_curr = _agg_kpi(google, curr_wk)
+        g_prev = _agg_kpi(google, prev_wk)
+    else:
+        n_curr = daily_kpi(naver, curr_str)
+        n_prev = daily_kpi(naver, prev_str)
+        g_curr = daily_kpi(google, curr_str)
+        g_prev = daily_kpi(google, prev_str)
 
-    n_spend_txt, n_spend_cls = diff_badge(n_curr["spend"], n_prev["spend"])
-    n_cpa_txt,   n_cpa_cls   = diff_badge(n_curr["cpa"],   n_prev["cpa"],   reverse=True)
-    g_spend_txt, g_spend_cls = diff_badge(g_curr["spend"], g_prev["spend"])
-    g_cpa_txt,   g_cpa_cls   = diff_badge(g_curr["cpa"],   g_prev["cpa"],   reverse=True)
+    n_spend_txt, n_spend_cls = diff_badge(n_curr["spend"], n_prev["spend"], prev_label=prev_label)
+    n_cpa_txt,   n_cpa_cls   = diff_badge(n_curr["cpa"],   n_prev["cpa"],   reverse=True, prev_label=prev_label)
+    g_spend_txt, g_spend_cls = diff_badge(g_curr["spend"], g_prev["spend"], prev_label=prev_label)
+    g_cpa_txt,   g_cpa_cls   = diff_badge(g_curr["cpa"],   g_prev["cpa"],   reverse=True, prev_label=prev_label)
 
     print(f"  네이버 CPA: {int(n_curr['cpa']):,}원  /  구글 CPA: {int(g_curr['cpa']):,}원")
 
@@ -1115,7 +1369,7 @@ def main():
         naver_pc, naver_mo, google_brand, google_comp, google_gen,
         naver, meta, all_dates
     )
-    comments = generate_comments(comment_data)
+    comments = generate_comments(comment_data, is_weekend=comment_data.get("is_weekend", False))
     all_comments_json = build_all_comments_json(
         naver_pc, naver_mo, google_brand, google_comp, google_gen,
         naver, meta, all_dates
@@ -1126,8 +1380,13 @@ def main():
         d = comment_data["auto"]["MO"][kw]
         if d["is_new"]:
             new_kws.append(f"{kw}({d['start']}~)")
-    title_auto = f"네이버 자동입찰 — {curr_str} ({meta['curr_day']}) 전전일 대비"
-    if new_kws:
+    if is_curr_weekend:
+        _fri, _sun = curr_wk[0], curr_wk[2]
+        _pfri, _psun = prev_wk[0], prev_wk[2]
+        title_auto = f"네이버 자동입찰 — 주말 합산 ({_fri}~{_sun}) / 전주 주말({_pfri}~{_psun}) 대비"
+    else:
+        title_auto = f"네이버 자동입찰 — {curr_str} ({meta['curr_day']}) 전전일 대비"
+    if new_kws and not is_curr_weekend:
         title_auto += f" · {', '.join(new_kws)} 신규"
 
     # ── 표 HTML ──
@@ -1162,7 +1421,11 @@ def main():
         "COMPARE_PERIOD":   f"{prev_str} vs {curr_str}",
         "UPDATE_DATE":      meta["update_str"],
         "CURR_DATE":        curr_str,
-        "SUMMARY_TITLE":    f"{meta['curr_label']} ({meta['curr_day']}) 요약 — 전일({prev_str} {meta['prev_day']}) 대비",
+        "SUMMARY_TITLE":    (
+            f"주말 합산 ({curr_wk[0]}~{curr_wk[2]}) 요약 — 전주 주말({prev_wk[0]}~{prev_wk[2]}) 대비"
+            if is_curr_weekend else
+            f"{meta['curr_label']} ({meta['curr_day']}) 요약 — 전일({prev_str} {meta['prev_day']}) 대비"
+        ),
 
         # KPI 카드
         "N_SPEND":      fmt_spend(n_curr["spend"]),
@@ -1204,11 +1467,21 @@ def main():
         "TABLE_G_SUMMARY":    table_g,
 
         # 섹션 제목
-        "TITLE_N_PC":   f"네이버 SA · PC — {curr_str} ({meta['curr_day']}) 전일({prev_str} {meta['prev_day']}) 대비",
-        "TITLE_N_MO":   f"네이버 SA · MO — {curr_str} ({meta['curr_day']}) 전일({prev_str} {meta['prev_day']}) 대비",
-        "TITLE_G_BRAND":f"구글 SA · 브랜드 — {curr_str} ({meta['curr_day']}) 전일({prev_str} {meta['prev_day']}) 대비",
-        "TITLE_G_COMP": f"구글 SA · 경쟁사 — {curr_str} ({meta['curr_day']}) 전일({prev_str} {meta['prev_day']}) 대비",
-        "TITLE_G_GEN":  f"구글 SA · 일반 — {curr_str} ({meta['curr_day']}) 전일({prev_str} {meta['prev_day']}) 대비",
+        "TITLE_N_PC":   (f"네이버 SA · PC — 주말 합산 ({curr_wk[0]}~{curr_wk[2]}) / 전주 주말({prev_wk[0]}~{prev_wk[2]}) 대비"
+                         if is_curr_weekend else
+                         f"네이버 SA · PC — {curr_str} ({meta['curr_day']}) 전일({prev_str} {meta['prev_day']}) 대비"),
+        "TITLE_N_MO":   (f"네이버 SA · MO — 주말 합산 ({curr_wk[0]}~{curr_wk[2]}) / 전주 주말({prev_wk[0]}~{prev_wk[2]}) 대비"
+                         if is_curr_weekend else
+                         f"네이버 SA · MO — {curr_str} ({meta['curr_day']}) 전일({prev_str} {meta['prev_day']}) 대비"),
+        "TITLE_G_BRAND":(f"구글 SA · 브랜드 — 주말 합산 ({curr_wk[0]}~{curr_wk[2]}) / 전주 주말({prev_wk[0]}~{prev_wk[2]}) 대비"
+                         if is_curr_weekend else
+                         f"구글 SA · 브랜드 — {curr_str} ({meta['curr_day']}) 전일({prev_str} {meta['prev_day']}) 대비"),
+        "TITLE_G_COMP": (f"구글 SA · 경쟁사 — 주말 합산 ({curr_wk[0]}~{curr_wk[2]}) / 전주 주말({prev_wk[0]}~{prev_wk[2]}) 대비"
+                         if is_curr_weekend else
+                         f"구글 SA · 경쟁사 — {curr_str} ({meta['curr_day']}) 전일({prev_str} {meta['prev_day']}) 대비"),
+        "TITLE_G_GEN":  (f"구글 SA · 일반 — 주말 합산 ({curr_wk[0]}~{curr_wk[2]}) / 전주 주말({prev_wk[0]}~{prev_wk[2]}) 대비"
+                         if is_curr_weekend else
+                         f"구글 SA · 일반 — {curr_str} ({meta['curr_day']}) 전일({prev_str} {meta['prev_day']}) 대비"),
         "TITLE_AUTO":   title_auto,
 
         # 코멘트
