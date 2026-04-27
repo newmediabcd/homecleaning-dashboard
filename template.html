@@ -684,7 +684,7 @@ function _aggKwDates(dates, kwKey){
     const cpc=k.clk>0?Math.round(k.spend/k.clk):0;
     const cvr=k.clk>0?(k.conv/k.clk*100).toFixed(2):0;
     return {...k,cpa,ctr:Number(ctr),cpc,cvr:Number(cvr)};
-  }).sort((a,b)=>b.spend-a.spend);
+  }).sort((a,b)=>b.conv-a.conv||b.spend-a.spend);
 }
 
 function _fmtSpend(v){ return (v/10000).toFixed(1)+"만원"; }
@@ -1012,7 +1012,7 @@ function _renderKwTables(pageId, kwKey, isNaver, currDate, wkDates){
       convTb.innerHTML = convKws.length ? convKws.map(_kwRow).join('') : '<tr><td colspan="10">전환 발생 키워드 없음</td></tr>';
     }
     if(spendTb){
-      const spendKws = kws.slice(0, 15);
+      const spendKws = kws.slice().sort((a,b)=>b.spend-a.spend).slice(0, 15);
       spendTb.innerHTML = spendKws.length ? spendKws.map(_kwRow).join('') : '<tr><td colspan="10">데이터 없음</td></tr>';
     }
   } else {

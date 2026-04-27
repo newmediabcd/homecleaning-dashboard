@@ -405,7 +405,9 @@ def _kw_day(df, d, top_n=60):
     grp = sub.groupby("키워드").agg(agg_cols).reset_index()
     # '-' 는 광고그룹 레벨 집계 행 → 제외
     grp = grp[grp["키워드"] != "-"]
-    grp = grp[grp["광고비"] > 0].sort_values("광고비", ascending=False).head(top_n)
+    grp = grp[grp["광고비"] > 0].head(top_n)
+    # 전환 수 내림차순 → 동률 시 광고비 내림차순
+    grp = grp.sort_values(["총전환", "광고비"], ascending=[False, False])
     out = []
     for _, r in grp.iterrows():
         sp, cv, cl = float(r["광고비"]), float(r["총전환"]), int(r["클릭"])
@@ -486,7 +488,9 @@ def _agg_kw(df, date_strs, top_n=60):
     grp = sub.groupby("키워드").agg(agg_cols).reset_index()
     # '-' 는 광고그룹 레벨 집계 행 → 제외
     grp = grp[grp["키워드"] != "-"]
-    grp = grp[grp["광고비"] > 0].sort_values("광고비", ascending=False).head(top_n)
+    grp = grp[grp["광고비"] > 0].head(top_n)
+    # 전환 수 내림차순 → 동률 시 광고비 내림차순
+    grp = grp.sort_values(["총전환", "광고비"], ascending=[False, False])
     out = []
     for _, r in grp.iterrows():
         sp, cv, cl = float(r["광고비"]), float(r["총전환"]), int(r["클릭"])
