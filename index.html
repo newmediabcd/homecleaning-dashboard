@@ -1232,14 +1232,15 @@ document.querySelectorAll(".ins-i").forEach(el=>{
 
 </script>
 <script>
-// 빌드 상태 표시
+// 빌드 상태 표시 (deploy.yml 빌드 + GitHub Pages 배포 모두 감지)
 (function() {
-  var API = 'https://api.github.com/repos/newmediabcd/homecleaning-dashboard/actions/workflows/deploy.yml/runs?per_page=1';
+  // 전체 workflow runs 조회 — deploy.yml 및 pages-build-deployment 모두 포함
+  var API = 'https://api.github.com/repos/newmediabcd/homecleaning-dashboard/actions/runs?per_page=10';
   var el = document.getElementById('build-status');
   var timeEl = document.getElementById('build-time');
   var _timer = null;
   var _startedAt = null;
-  var AVG_SEC = 150; // 평균 빌드 소요 약 2분 30초
+  var AVG_SEC = 150; // 평균 소요 약 2분 30초
 
   function _fmt(sec){
     if(sec < 60) return sec + '초';
@@ -1270,11 +1271,20 @@ document.querySelectorAll(".ins-i").forEach(el=>{
     fetch(API)
       .then(function(r){ return r.json(); })
       .then(function(data) {
-        var run = data.workflow_runs && data.workflow_runs[0];
-        if (run && (run.status === 'in_progress' || run.status === 'queued')) {
+        var runs = data.workflow_runs || [];
+        // 최근 10개 중 in_progress/queued/waiting 인 것 찾기 (빌드 + Pages 배포 포함)
+        var active = null;
+        for(var i = 0; i < runs.length; i++){
+          var r = runs[i];
+          if(r.status === 'in_progress' || r.status === 'queued' || r.status === 'waiting'){
+            active = r;
+            break;
+          }
+        }
+        if(active){
           el.classList.add('visible');
           if(!_startedAt){
-            _startTick(run.run_started_at || run.created_at);
+            _startTick(active.run_started_at || active.created_at);
           }
         } else {
           el.classList.remove('visible');
