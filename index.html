@@ -1162,7 +1162,7 @@ function _renderKwTables(pageId, kwKey, isNaver, currDate, wkDates){
     const convTb = document.getElementById(pageId+'-conv-tbl');
     const spendTb = document.getElementById(pageId+'-spend-tbl');
     if(convTb){
-      const convKws = kws.filter(k=>k.conv>0);
+      const convKws = kws.filter(k=>k.conv>0).sort((a,b)=>b.conv-a.conv);
       convTb.innerHTML = convKws.length ? convKws.map(_kwRow).join('') : '<tr><td colspan="10">전환 발생 키워드 없음</td></tr>';
     }
     if(spendTb){

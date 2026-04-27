@@ -187,8 +187,10 @@ tr.twknd:hover td{background:rgba(254,243,199,0.7)}
   <div class="kg">
     <div class="ki"><div class="kl">네이버 SA 광고비</div><div class="kv" id="kpi-n-spend">{{N_SPEND}}</div><div class="ks {{N_SPEND_CLS}}" id="kpi-n-spend-badge">{{N_SPEND_DIFF}}</div></div>
     <div class="ki"><div class="kl">네이버 SA CPA</div><div class="kv" id="kpi-n-cpa">{{N_CPA}}</div><div class="ks {{N_CPA_CLS}}" id="kpi-n-cpa-badge">{{N_CPA_DIFF}}</div></div>
+    <div class="ki"><div class="kl">네이버 SA CPC</div><div class="kv" id="kpi-n-cpc">{{N_CPC}}</div><div class="ks {{N_CPC_CLS}}" id="kpi-n-cpc-badge">{{N_CPC_DIFF}}</div></div>
     <div class="ki"><div class="kl">구글 SA 광고비</div><div class="kv" id="kpi-g-spend">{{G_SPEND}}</div><div class="ks {{G_SPEND_CLS}}" id="kpi-g-spend-badge">{{G_SPEND_DIFF}}</div></div>
     <div class="ki"><div class="kl">구글 SA CPA</div><div class="kv" id="kpi-g-cpa">{{G_CPA}}</div><div class="ks {{G_CPA_CLS}}" id="kpi-g-cpa-badge">{{G_CPA_DIFF}}</div></div>
+    <div class="ki"><div class="kl">구글 SA CPC</div><div class="kv" id="kpi-g-cpc">{{G_CPC}}</div><div class="ks {{G_CPC_CLS}}" id="kpi-g-cpc-badge">{{G_CPC_DIFF}}</div></div>
   </div>
   <div class="cg">
     <div class="cb">
@@ -782,13 +784,19 @@ function onDateChange(selectedDate){
     const nAgg=_aggKpi(wkDates,"npc"),nAggMo=_aggKpi(wkDates,"nmo");
     const nSpend=nAgg.spend+nAggMo.spend, nConv=nAgg.conv+nAggMo.conv;
     const nCpa=nConv>0?Math.round(nSpend/nConv):0;
+    const nClk=nAgg.clk+nAggMo.clk;
+    const nCpc=nClk>0?Math.round(nSpend/nClk):0;
     const gAgg=_aggKpi(wkDates,"g");
     document.getElementById("kpi-n-spend").textContent=_fmtSpend(nSpend);
     document.getElementById("kpi-n-cpa").textContent=nCpa.toLocaleString()+"원";
+    document.getElementById("kpi-n-cpc").textContent=nCpc.toLocaleString()+"원";
     document.getElementById("kpi-g-spend").textContent=_fmtSpend(gAgg.spend);
     document.getElementById("kpi-g-cpa").textContent=gAgg.cpa.toLocaleString()+"원";
+    document.getElementById("kpi-g-cpc").textContent=gAgg.cpc.toLocaleString()+"원";
     [["kpi-n-spend-badge","주말 합산","kn"],["kpi-n-cpa-badge","주말 합산","kn"],
-     ["kpi-g-spend-badge","주말 합산","kn"],["kpi-g-cpa-badge","주말 합산","kn"]
+     ["kpi-n-cpc-badge","주말 합산","kn"],
+     ["kpi-g-spend-badge","주말 합산","kn"],["kpi-g-cpa-badge","주말 합산","kn"],
+     ["kpi-g-cpc-badge","주말 합산","kn"]
     ].forEach(([id,txt,cls])=>{
       const el=document.getElementById(id);
       el.textContent=txt; el.className="ks "+cls;
@@ -796,12 +804,16 @@ function onDateChange(selectedDate){
   } else {
     document.getElementById("kpi-n-spend").textContent = _fmtSpend(curr.n_spend);
     document.getElementById("kpi-n-cpa").textContent   = curr.n_cpa.toLocaleString()+"원";
+    document.getElementById("kpi-n-cpc").textContent   = (curr.n_cpc||0).toLocaleString()+"원";
     document.getElementById("kpi-g-spend").textContent = _fmtSpend(curr.g_spend);
     document.getElementById("kpi-g-cpa").textContent   = curr.g_cpa.toLocaleString()+"원";
+    document.getElementById("kpi-g-cpc").textContent   = (curr.g_cpc||0).toLocaleString()+"원";
     [["kpi-n-spend-badge",_diffBadge(curr.n_spend,prev&&prev.n_spend,false)],
      ["kpi-n-cpa-badge",  _diffBadge(curr.n_cpa,  prev&&prev.n_cpa,  true)],
+     ["kpi-n-cpc-badge",  _diffBadge(curr.n_cpc,  prev&&prev.n_cpc,  true)],
      ["kpi-g-spend-badge",_diffBadge(curr.g_spend,prev&&prev.g_spend,false)],
      ["kpi-g-cpa-badge",  _diffBadge(curr.g_cpa,  prev&&prev.g_cpa,  true)],
+     ["kpi-g-cpc-badge",  _diffBadge(curr.g_cpc,  prev&&prev.g_cpc,  true)],
     ].forEach(([id,b])=>{
       const el=document.getElementById(id);
       el.textContent=b.text; el.className="ks "+b.cls;
@@ -921,6 +933,7 @@ function _pageCards(currDate, prevDate, key, wkDates){
     const cpaCls = agg.cpa>0&&agg.cpa<=TARGET_CPA?"ku":agg.cpa>TARGET_CPA?"kd":"kn";
     return [
       {label:`${wkLabel} 광고비`, value:`${agg.spend.toLocaleString()}원`, text:"주말 3일 합산", cls:"kn"},
+      {label:`${wkLabel} CPC`,    value:`${agg.cpc.toLocaleString()}원`,   text:"주말 3일 합산", cls:"kn"},
       {label:`${wkLabel} 전환`,   value:`${agg.conv}건`,                   text:"주말 3일 합산", cls:"kn"},
       {label:`${wkLabel} CPA`,    value:`${agg.cpa.toLocaleString()}원`,    text:agg.cpa>0&&agg.cpa<=TARGET_CPA?"목표 이내":"목표 초과", cls:cpaCls},
       {label:`${wkLabel} CVR`,    value:`${agg.cvr}%`,                     text:"주말 3일 합산", cls:"kn"},
@@ -930,11 +943,13 @@ function _pageCards(currDate, prevDate, key, wkDates){
   const prev = prevDate&&allDailyKpi[prevDate]?allDailyKpi[prevDate][key]:null;
   if(!curr) return [];
   const spendB = _diffBadge(curr.spend, prev&&prev.spend, false);
+  const cpcB   = _diffBadge(curr.cpc, prev&&prev.cpc, true);
   const convB  = _convBadge(curr.conv, prev&&prev.conv);
   const cpaB   = _diffBadge(curr.cpa, prev&&prev.cpa, true);
   const cvrB   = _cvrBadge(curr.cvr, prev&&prev.cvr);
   return [
     {label:`${currDate} 광고비`, value:`${curr.spend.toLocaleString()}원`, ...spendB},
+    {label:`${currDate} CPC`,    value:`${curr.cpc?curr.cpc.toLocaleString():'—'}원`,  ...cpcB},
     {label:`${currDate} 전환`,   value:`${curr.conv}건`,                   ...convB},
     {label:`${currDate} CPA`,    value:`${curr.cpa.toLocaleString()}원`,    ...cpaB},
     {label:`${currDate} CVR`,    value:`${curr.cvr}%`,                     ...cvrB},
@@ -988,16 +1003,17 @@ function _renderKwTables(pageId, kwKey, isNaver, currDate, wkDates){
     const convSec = document.getElementById(pageId+'-conv-sec');
     const spendSec = document.getElementById(pageId+'-spend-sec');
     if(convSec) convSec.textContent = dateLabel + ' 전환 발생 키워드';
-    if(spendSec) spendSec.textContent = dateLabel + ' 광고비 상위 키워드 (전체)';
+    if(spendSec) spendSec.textContent = dateLabel + ' 광고비 상위 키워드 (상위 15개)';
 
     const convTb = document.getElementById(pageId+'-conv-tbl');
     const spendTb = document.getElementById(pageId+'-spend-tbl');
     if(convTb){
-      const convKws = kws.filter(k=>k.conv>0);
+      const convKws = kws.filter(k=>k.conv>0).sort((a,b)=>b.conv-a.conv);
       convTb.innerHTML = convKws.length ? convKws.map(_kwRow).join('') : '<tr><td colspan="10">전환 발생 키워드 없음</td></tr>';
     }
     if(spendTb){
-      spendTb.innerHTML = kws.length ? kws.map(_kwRow).join('') : '<tr><td colspan="10">데이터 없음</td></tr>';
+      const spendKws = kws.slice(0, 15);
+      spendTb.innerHTML = spendKws.length ? spendKws.map(_kwRow).join('') : '<tr><td colspan="10">데이터 없음</td></tr>';
     }
   } else {
     const kwSec = document.getElementById(pageId+'-kw-sec');
