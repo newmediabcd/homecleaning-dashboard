@@ -1321,6 +1321,8 @@ document.querySelectorAll(".ins-i").forEach(el=>{
   var _timer = null;
   var _startedAt = null;
   var AVG_SEC = 150; // 평균 소요 약 2분 30초
+  var _etag = null;
+  var _lastRuns = [];
 
   function _fmt(sec){
     if(sec < 60) return sec + '초';
@@ -1347,29 +1349,37 @@ document.querySelectorAll(".ins-i").forEach(el=>{
     timeEl.textContent = '';
   }
 
+  function _processRuns(runs){
+    var active = null;
+    for(var i = 0; i < runs.length; i++){
+      var r = runs[i];
+      if(r.status === 'in_progress' || r.status === 'queued' || r.status === 'waiting'){
+        active = r; break;
+      }
+    }
+    if(active){
+      el.classList.add('visible');
+      if(!_startedAt) _startTick(active.run_started_at || active.created_at);
+    } else {
+      el.classList.remove('visible');
+      _stopTick();
+    }
+  }
+
   function check() {
-    fetch(API)
-      .then(function(r){ return r.json(); })
-      .then(function(data) {
-        var runs = data.workflow_runs || [];
-        // 최근 10개 중 in_progress/queued/waiting 인 것 찾기 (빌드 + Pages 배포 포함)
-        var active = null;
-        for(var i = 0; i < runs.length; i++){
-          var r = runs[i];
-          if(r.status === 'in_progress' || r.status === 'queued' || r.status === 'waiting'){
-            active = r;
-            break;
-          }
-        }
-        if(active){
-          el.classList.add('visible');
-          if(!_startedAt){
-            _startTick(active.run_started_at || active.created_at);
-          }
-        } else {
-          el.classList.remove('visible');
-          _stopTick();
-        }
+    var headers = {};
+    if(_etag) headers['If-None-Match'] = _etag; // 304이면 rate limit 미차감
+    fetch(API, {headers: headers})
+      .then(function(r){
+        if(r.status === 304){ _processRuns(_lastRuns); return null; }
+        var et = r.headers.get('ETag');
+        if(et) _etag = et;
+        return r.json();
+      })
+      .then(function(data){
+        if(!data) return;
+        _lastRuns = data.workflow_runs || [];
+        _processRuns(_lastRuns);
       })
       .catch(function(){});
   }
