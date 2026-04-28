@@ -171,11 +171,12 @@ tr:hover td{background:#f5f9ff}
 
 <!-- ═══════════ 네이버 PC ═══════════ -->
 <div id="ppc" class="pg">
+  <div class="sec">네이버 SA · PC</div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem;padding:.65rem 1rem;background:#f0f6ff;border-radius:var(--rs);border:1px solid var(--ki-border)">
     <span style="font-size:12px;font-weight:700;color:var(--blt)">주차 선택</span>
     <select id="ppc-week-sel" onchange="onSecWeekChange('ppc',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid var(--ki-border);border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
+    <span id="ppc-range-label" style="font-size:12px;color:var(--tx2)"></span>
   </div>
-  <div class="sec" id="ppc-title">네이버 SA · PC</div>
   <div class="ins ins-green">
     <div class="ins-l">네이버 PC</div>
     <div id="cmt-ppc"></div>
@@ -192,11 +193,12 @@ tr:hover td{background:#f5f9ff}
 
 <!-- ═══════════ 네이버 MO ═══════════ -->
 <div id="pmo" class="pg">
+  <div class="sec">네이버 SA · MO</div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem;padding:.65rem 1rem;background:#f0f6ff;border-radius:var(--rs);border:1px solid var(--ki-border)">
     <span style="font-size:12px;font-weight:700;color:var(--blt)">주차 선택</span>
     <select id="pmo-week-sel" onchange="onSecWeekChange('pmo',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid var(--ki-border);border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
+    <span id="pmo-range-label" style="font-size:12px;color:var(--tx2)"></span>
   </div>
-  <div class="sec" id="pmo-title">네이버 SA · MO</div>
   <div class="ins ins-green">
     <div class="ins-l">네이버 MO</div>
     <div id="cmt-pmo"></div>
@@ -213,11 +215,12 @@ tr:hover td{background:#f5f9ff}
 
 <!-- ═══════════ 구글 브랜드 ═══════════ -->
 <div id="pgb" class="pg">
+  <div class="sec">구글 브랜드</div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem;padding:.65rem 1rem;background:#f0f6ff;border-radius:var(--rs);border:1px solid var(--ki-border)">
     <span style="font-size:12px;font-weight:700;color:var(--blt)">주차 선택</span>
     <select id="pgb-week-sel" onchange="onSecWeekChange('pgb',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid var(--ki-border);border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
+    <span id="pgb-range-label" style="font-size:12px;color:var(--tx2)"></span>
   </div>
-  <div class="sec" id="pgb-title">구글 SA · 브랜드</div>
   <div class="ins ins-blue">
     <div class="ins-l">구글 브랜드</div>
     <div id="cmt-pgb"></div>
@@ -232,11 +235,12 @@ tr:hover td{background:#f5f9ff}
 
 <!-- ═══════════ 구글 경쟁사 ═══════════ -->
 <div id="pgc" class="pg">
+  <div class="sec">구글 경쟁사</div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem;padding:.65rem 1rem;background:#f0f6ff;border-radius:var(--rs);border:1px solid var(--ki-border)">
     <span style="font-size:12px;font-weight:700;color:var(--blt)">주차 선택</span>
     <select id="pgc-week-sel" onchange="onSecWeekChange('pgc',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid var(--ki-border);border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
+    <span id="pgc-range-label" style="font-size:12px;color:var(--tx2)"></span>
   </div>
-  <div class="sec" id="pgc-title">구글 SA · 경쟁사</div>
   <div class="ins ins-blue">
     <div class="ins-l">구글 경쟁사</div>
     <div id="cmt-pgc"></div>
@@ -251,11 +255,12 @@ tr:hover td{background:#f5f9ff}
 
 <!-- ═══════════ 구글 일반 ═══════════ -->
 <div id="pgg" class="pg">
+  <div class="sec">구글 일반</div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem;padding:.65rem 1rem;background:#f0f6ff;border-radius:var(--rs);border:1px solid var(--ki-border)">
     <span style="font-size:12px;font-weight:700;color:var(--blt)">주차 선택</span>
     <select id="pgg-week-sel" onchange="onSecWeekChange('pgg',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid var(--ki-border);border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
+    <span id="pgg-range-label" style="font-size:12px;color:var(--tx2)"></span>
   </div>
-  <div class="sec" id="pgg-title">구글 SA · 일반</div>
   <div class="ins ins-blue">
     <div class="ins-l">구글 일반</div>
     <div id="cmt-pgg"></div>
@@ -535,10 +540,10 @@ function onWeekChange(weekLabel){
 }
 
 function _updateSubPage(pageId, dataKey, kwKey, pageLabel, hasRank, isNaver, weekLabel, curr, prev){
-  const t=document.getElementById(pageId+'-title');
-  if(t){
-    const cmp=prev?` — 전주(${prev.range}) 대비`:'';
-    t.textContent=`${pageLabel} — ${weekLabel} (${curr.range})${cmp}`;
+  const r=document.getElementById(pageId+'-range-label');
+  if(r){
+    const cmp=prev?' vs 전주 대비':'';
+    r.textContent=`${curr.range}${cmp}`;
   }
   _renderKpiGrid(pageId+'-kg', _pageCards(curr,prev,dataKey));
   _renderDailyTable(pageId+'-tbl', curr.daily_rows?.[dataKey], hasRank);
