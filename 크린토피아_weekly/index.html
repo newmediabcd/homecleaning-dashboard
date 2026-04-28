@@ -117,7 +117,7 @@ tr:hover td{background:#f5f9ff}
   <div><span class="t-title">크린토피아 <span>홈클리닝</span> · Weekly</span><span class="pill">2026년 4월</span></div>
   <div style="display:flex;align-items:center;gap:12px">
     <span class="build-status" id="build-status"><span class="build-spinner"></span>데이터 업데이트 중</span>
-    <div class="t-meta">업데이트: 2026/04/28 15:41</div>
+    <div class="t-meta">업데이트: 2026/04/28 15:46</div>
   </div>
 </div>
 
@@ -404,22 +404,22 @@ function _renderCmpTable(tbodyId, curr, prev){
     {key:'cvr',   fmt:v=>v+'%',                  rev:false},
     {key:'cpa',   fmt:v=>v.toLocaleString()+'원', rev:true},
   ];
-  const currCells=M.map(m=>`<td style="font-weight:700">${m.fmt(curr[m.key]||0)}</td>`).join('');
+  const currCells=M.map(m=>`<td style="font-weight:700;text-align:center">${m.fmt(curr[m.key]||0)}</td>`).join('');
   const prevCells=prev
-    ? M.map(m=>`<td style="color:var(--tx3)">${m.fmt(prev[m.key]||0)}</td>`).join('')
-    : M.map(()=>'<td style="color:var(--tx3)">—</td>').join('');
+    ? M.map(m=>`<td style="color:var(--tx3);text-align:center">${m.fmt(prev[m.key]||0)}</td>`).join('')
+    : M.map(()=>'<td style="color:var(--tx3);text-align:center">—</td>').join('');
   const pctCells=M.map(m=>{
     const cv=curr[m.key]||0, pv=prev?(prev[m.key]||0):0;
-    if(!prev||pv===0) return '<td style="color:var(--tx3)">—</td>';
+    if(!prev||pv===0) return '<td style="color:var(--tx3);text-align:center;background:#f0f2f5">—</td>';
     const pct=Math.round((cv-pv)/pv*100), sign=pct>=0?'+':'';
     const good=m.rev?pct<0:pct>0, bad=m.rev?pct>0:pct<0;
     const col=good?'color:var(--gn)':bad?'color:var(--rd)':'color:var(--tx3)';
-    return `<td style="${col};font-weight:700">${sign}${pct}%</td>`;
+    return `<td style="${col};font-weight:700;text-align:center;background:#f0f2f5">${sign}${pct}%</td>`;
   }).join('');
   tb.innerHTML=
-    `<tr><td style="text-align:left;font-weight:700;color:var(--blt);white-space:nowrap">이번주</td>${currCells}</tr>`+
     `<tr><td style="text-align:left;font-weight:600;color:var(--tx3);white-space:nowrap">전주</td>${prevCells}</tr>`+
-    `<tr><td style="text-align:left;font-weight:600;color:var(--tx2);white-space:nowrap">증감</td>${pctCells}</tr>`;
+    `<tr><td style="text-align:left;font-weight:700;color:var(--blt);white-space:nowrap">이번주</td>${currCells}</tr>`+
+    `<tr style="background:#f0f2f5"><td style="text-align:left;font-weight:600;color:var(--tx2);white-space:nowrap;background:#f0f2f5">증감</td>${pctCells}</tr>`;
 }
 
 // ── 키워드 표 ──
