@@ -950,16 +950,15 @@ function _convBadge(curr, prev, label){
   label = label||"전일";
   if(!prev&&prev!==0) return {text:`${label} 대비 —`, cls:"kn"};
   if(prev===0) return {text:`${label} 대비 —`, cls:"kn"};
-  const pct = Math.round((curr-prev)/prev*100);
-  const sign = pct>=0?"+":"";
-  return {text:`${label} ${prev}건 대비 ${sign}${pct}%`, cls:pct>0?"ku":"kd"};
+  const diff = curr - prev;
+  return {text:`${label} ${prev}건 대비 ${diff>=0?"증가":"감소"}`, cls:diff>=0?"kd":"ku"};
 }
 function _cvrBadge(curr, prev, label){
   label = label||"전일";
   if(!prev&&prev!==0) return {text:`${label} 대비 —`, cls:"kn"};
   if(prev===0) return {text:`${label} 대비 —`, cls:"kn"};
   const diff = curr-prev;
-  return {text:`${label} ${prev}% 대비 ${diff>=0?"상승":"하락"}`, cls:diff>=0?"ku":"kd"};
+  return {text:`${label} ${prev}% 대비 ${diff>=0?"상승":"하락"}`, cls:diff>=0?"kd":"ku"};
 }
 
 // ── KPI 카드 그리드 렌더러 ──

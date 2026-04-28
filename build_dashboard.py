@@ -1450,12 +1450,12 @@ def main():
     n_cpa_txt,   n_cpa_cls   = diff_badge(n_curr["cpa"],   n_prev["cpa"],   reverse=True, prev_label=prev_label)
     n_cpc_txt,   n_cpc_cls   = diff_badge(n_curr["cpc"],   n_prev["cpc"],   reverse=True, prev_label=prev_label)
     n_cvr_txt = (f"{prev_label} {n_prev['cvr']}% 대비 {'상승' if n_curr['cvr']>n_prev['cvr'] else '하락'}" if n_prev["cvr"]>0 else f"{prev_label} 대비 —")
-    n_cvr_cls = ("ku" if n_curr["cvr"]>n_prev["cvr"] else "kd") if n_prev["cvr"]>0 else "kn"
+    n_cvr_cls = ("kd" if n_curr["cvr"]>n_prev["cvr"] else "ku") if n_prev["cvr"]>0 else "kn"
     g_spend_txt, g_spend_cls = diff_badge(g_curr["spend"], g_prev["spend"], prev_label=prev_label)
     g_cpa_txt,   g_cpa_cls   = diff_badge(g_curr["cpa"],   g_prev["cpa"],   reverse=True, prev_label=prev_label)
     g_cpc_txt,   g_cpc_cls   = diff_badge(g_curr["cpc"],   g_prev["cpc"],   reverse=True, prev_label=prev_label)
     g_cvr_txt = (f"{prev_label} {g_prev['cvr']}% 대비 {'상승' if g_curr['cvr']>g_prev['cvr'] else '하락'}" if g_prev["cvr"]>0 else f"{prev_label} 대비 —")
-    g_cvr_cls = ("ku" if g_curr["cvr"]>g_prev["cvr"] else "kd") if g_prev["cvr"]>0 else "kn"
+    g_cvr_cls = ("kd" if g_curr["cvr"]>g_prev["cvr"] else "ku") if g_prev["cvr"]>0 else "kn"
 
     print(f"  네이버 CPA: {int(n_curr['cpa']):,}원  /  구글 CPA: {int(g_curr['cpa']):,}원")
 
