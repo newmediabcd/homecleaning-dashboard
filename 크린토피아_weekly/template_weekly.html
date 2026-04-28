@@ -153,7 +153,7 @@ tr:hover td{background:#f5f9ff}
     <div class="ki"><div class="kl">네이버 CPA</div><div class="kv" id="kpi-n-cpa">—</div><div class="ks kn" id="kpi-n-cpa-bdg">—</div></div>
     <div class="ki"><div class="kl">네이버 CVR</div><div class="kv" id="kpi-n-cvr">—</div><div class="ks kn" id="kpi-n-cvr-bdg">—</div></div>
   </div>
-  <div class="tw"><table><thead><tr><th>항목</th><th>이번주</th><th>전주</th><th>증감</th></tr></thead><tbody id="sum-n-cmp-tbl"></tbody></table></div>
+  <div class="tw"><table><thead><tr><th></th><th>노출</th><th>클릭</th><th>광고비</th><th>CPC</th><th>CTR</th><th>전환</th><th>CVR</th><th>CPA</th></tr></thead><tbody id="sum-n-cmp-tbl"></tbody></table></div>
 
   <div class="kg-label" style="margin-top:.8rem">구글 SA</div>
   <div class="kg">
@@ -162,7 +162,7 @@ tr:hover td{background:#f5f9ff}
     <div class="ki"><div class="kl">구글 CPA</div><div class="kv" id="kpi-g-cpa">—</div><div class="ks kn" id="kpi-g-cpa-bdg">—</div></div>
     <div class="ki"><div class="kl">구글 CVR</div><div class="kv" id="kpi-g-cvr">—</div><div class="ks kn" id="kpi-g-cvr-bdg">—</div></div>
   </div>
-  <div class="tw"><table><thead><tr><th>항목</th><th>이번주</th><th>전주</th><th>증감</th></tr></thead><tbody id="sum-g-cmp-tbl"></tbody></table></div>
+  <div class="tw"><table><thead><tr><th></th><th>노출</th><th>클릭</th><th>광고비</th><th>CPC</th><th>CTR</th><th>전환</th><th>CVR</th><th>CPA</th></tr></thead><tbody id="sum-g-cmp-tbl"></tbody></table></div>
 </div>
 
 <!-- ═══════════ 네이버 PC ═══════════ -->
@@ -390,36 +390,36 @@ function _googleSaTotal(wk){
     cpa:conv>0?Math.round(spend/conv):0};
 }
 
-// ── 이번주 vs 전주 비교 표 ──
+// ── 이번주 vs 전주 비교 표 (행=이번주·전주·증감, 열=지표) ──
 function _renderCmpTable(tbodyId, curr, prev){
   const tb=document.getElementById(tbodyId);
   if(!tb) return;
-  const metrics=[
-    {label:'노출',   key:'imp',   fmt:v=>v.toLocaleString(),    rev:false},
-    {label:'클릭',   key:'clk',   fmt:v=>v.toLocaleString(),    rev:false},
-    {label:'광고비', key:'spend', fmt:v=>_fmtSpend(v),          rev:false},
-    {label:'CPC',   key:'cpc',   fmt:v=>v.toLocaleString()+'원', rev:true},
-    {label:'CTR',   key:'ctr',   fmt:v=>v+'%',                  rev:false},
-    {label:'전환',   key:'conv',  fmt:v=>v+'건',                 rev:false},
-    {label:'CVR',   key:'cvr',   fmt:v=>v+'%',                  rev:false},
-    {label:'CPA',   key:'cpa',   fmt:v=>v.toLocaleString()+'원', rev:true},
+  const M=[
+    {key:'imp',   fmt:v=>v.toLocaleString(),     rev:false},
+    {key:'clk',   fmt:v=>v.toLocaleString(),     rev:false},
+    {key:'spend', fmt:v=>_fmtSpend(v),           rev:false},
+    {key:'cpc',   fmt:v=>v.toLocaleString()+'원', rev:true},
+    {key:'ctr',   fmt:v=>v+'%',                  rev:false},
+    {key:'conv',  fmt:v=>v+'건',                  rev:false},
+    {key:'cvr',   fmt:v=>v+'%',                  rev:false},
+    {key:'cpa',   fmt:v=>v.toLocaleString()+'원', rev:true},
   ];
-  tb.innerHTML=metrics.map(m=>{
-    const cv=curr[m.key]||0, pv=prev?(prev[m.key]||0):null;
-    let pctHtml='—';
-    if(pv!==null&&pv>0){
-      const pct=Math.round((cv-pv)/pv*100), sign=pct>=0?'+':'';
-      const good=m.rev?pct<0:pct>0, bad=m.rev?pct>0:pct<0;
-      const col=good?'color:var(--gn)':bad?'color:var(--rd)':'color:var(--tx3)';
-      pctHtml=`<span style="${col};font-weight:700">${sign}${pct}%</span>`;
-    }
-    return `<tr>
-      <td style="text-align:left;font-weight:600;color:var(--tx2)">${m.label}</td>
-      <td style="font-weight:700">${m.fmt(cv)}</td>
-      <td style="color:var(--tx3)">${pv!==null?m.fmt(pv):'—'}</td>
-      <td>${pctHtml}</td>
-    </tr>`;
+  const currCells=M.map(m=>`<td style="font-weight:700">${m.fmt(curr[m.key]||0)}</td>`).join('');
+  const prevCells=prev
+    ? M.map(m=>`<td style="color:var(--tx3)">${m.fmt(prev[m.key]||0)}</td>`).join('')
+    : M.map(()=>'<td style="color:var(--tx3)">—</td>').join('');
+  const pctCells=M.map(m=>{
+    const cv=curr[m.key]||0, pv=prev?(prev[m.key]||0):0;
+    if(!prev||pv===0) return '<td style="color:var(--tx3)">—</td>';
+    const pct=Math.round((cv-pv)/pv*100), sign=pct>=0?'+':'';
+    const good=m.rev?pct<0:pct>0, bad=m.rev?pct>0:pct<0;
+    const col=good?'color:var(--gn)':bad?'color:var(--rd)':'color:var(--tx3)';
+    return `<td style="${col};font-weight:700">${sign}${pct}%</td>`;
   }).join('');
+  tb.innerHTML=
+    `<tr><td style="text-align:left;font-weight:700;color:var(--blt);white-space:nowrap">이번주</td>${currCells}</tr>`+
+    `<tr><td style="text-align:left;font-weight:600;color:var(--tx3);white-space:nowrap">전주</td>${prevCells}</tr>`+
+    `<tr><td style="text-align:left;font-weight:600;color:var(--tx2);white-space:nowrap">증감</td>${pctCells}</tr>`;
 }
 
 // ── 키워드 표 ──
