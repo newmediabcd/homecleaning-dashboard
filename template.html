@@ -139,8 +139,8 @@ tr.twknd:hover td{background:rgba(254,243,199,0.7)}
 #ppc th, #pmo th, #pau th{background:#d4f0e4;color:#0a6e4c;border-bottom-color:#a8dfc8;border-right-color:#a8dfc8;}
 #ppc .cb, #pmo .cb, #pau .cb{border-color:#c0e8d4;}
 @media(max-width:768px){.pg{padding:1rem 1rem 2rem}.kg{grid-template-columns:repeat(2,1fr)}.cg{grid-template-columns:1fr}}
-.build-status{display:none;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#b06d10;background:#faebd4;border:1px solid #e8c87a;border-radius:20px;padding:4px 12px}
-.build-status.visible{display:inline-flex}
+.build-status{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#b06d10;background:#faebd4;border:1px solid #e8c87a;border-radius:20px;padding:4px 12px}
+.build-status.hidden{display:none}
 .build-spinner{width:10px;height:10px;border:2px solid #e8c87a;border-top-color:#b06d10;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
 .build-time{font-size:10px;font-weight:500;color:#92400e;opacity:.85;margin-left:2px}
@@ -1226,10 +1226,10 @@ document.querySelectorAll(".ins-i").forEach(el=>{
       }
     }
     if(active){
-      el.classList.add('visible');
+      el.classList.remove('hidden');
       if(!_startedAt) _startTick(active.run_started_at || active.created_at);
     } else {
-      el.classList.remove('visible');
+      el.classList.add('hidden');
       _stopTick();
     }
   }
