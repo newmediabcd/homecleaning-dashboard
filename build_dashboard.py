@@ -107,7 +107,7 @@ def get_date_meta(df: pd.DataFrame) -> dict:
         "data_end":    curr.strftime("%m/%d"),
         "all_dates":   all_dates,
         "recent7":     all_dates[-7:],
-        "update_str":  datetime.now().strftime("%Y.%m.%d") + f"({day_ko[datetime.now().weekday()]}) 업데이트",
+        "update_str":  "업데이트: " + datetime.now().strftime("%Y/%m/%d %H:%M"),
     }
 
 
