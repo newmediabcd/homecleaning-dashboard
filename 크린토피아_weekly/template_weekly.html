@@ -2,80 +2,111 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>크린토피아 홈클리닝 · Weekly</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 <style>
 :root{
-  --blt:#1a56db;--tx:#1a202c;--tx2:#4a5568;--tx3:#718096;
-  --ki-bg:#f8faff;--ki-border:#dce8fb;--rs:10px;
-  --rd:#e53e3e;--gnt:#0a6e4c;--bk:#1e293b;
-  --nav-bg:#fff;--nav-border:#e2e8f0;
-  --wk-bg:#fff8e1;--wk-border:#f6d860;
+  --bg:#ffffff;--sf:#ffffff;--sf2:#f0f6ff;--b:rgba(0,0,0,0.09);--b2:rgba(0,0,0,0.14);
+  --tx:#1a1a18;--tx2:#5a5956;--tx3:#96948f;
+  --bl:#1a5fa8;--blb:#ddeeff;--blt:#0d4a8a;
+  --gn:#0f9e6e;--gnb:#e0f5ed;--gnt:#0a6e4c;
+  --rd:#e02020;--rdb:#fde8e8;--rdt:#c01010;
+  --am:#b06d10;--amb:#faebd4;--amt:#7a4c0b;
+  --pu:#6c5fc7;--pub:#eeecfe;--put:#4a3fa0;
+  --gy:#ebebeb;--gyt:#555;
+  --r:10px;--rs:6px;
+  --ki-bg:#e8f4fd;--ki-border:#b8d8f0;
+  --th-bg:#ddeeff;--th-tx:#0d4a8a;
+  --tnew-bg:rgba(200,225,255,0.18);--tnew-bd:#1a5fa8;
+  --ins-bg:#1a5fa8;--ins-tx:#ffffff;
+  --badge-ok-bg:#ddeeff;--badge-ok-tx:#0d4a8a;
+  --badge-bad-bg:#fde8e8;--badge-bad-tx:#c01010;
+  --badge-neu-bg:#ebebeb;--badge-neu-tx:#555;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Pretendard',sans-serif;background:#f1f5f9;color:var(--tx);font-size:14px}
-/* topbar */
-.topbar{display:flex;justify-content:space-between;align-items:center;background:var(--bk);color:#fff;padding:.7rem 1.5rem;gap:1rem;flex-wrap:wrap}
-.t-title{font-size:15px;font-weight:700;color:#fff}
-.t-title span{color:#6ee7b7}
-.t-meta{font-size:11px;color:#94a3b8}
-.pill{background:rgba(255,255,255,.12);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;color:#cbd5e1;margin-left:8px}
-/* update indicator */
+body{font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--tx);font-size:13px;line-height:1.6}
+
+/* TOPBAR */
+.topbar{background:#fff;border-bottom:3px solid var(--bl);padding:.85rem 1.75rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(26,95,168,0.08)}
+.t-title{font-size:18px;font-weight:400;color:#1a1a18;letter-spacing:-.3px}
+.t-title span{color:var(--bl)}
+.t-meta{font-size:12px;color:var(--tx3)}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;background:var(--blb);color:var(--blt);margin-left:8px;border:1px solid var(--ki-border)}
+
+/* NAV */
+.nav{background:#fff;border-bottom:1px solid var(--b);padding:0 1.75rem;display:flex;overflow-x:auto;gap:4px;align-items:center}
+.nb{font-size:13px;font-weight:500;color:var(--tx3);padding:.4rem .95rem;border:2px solid transparent;background:none;cursor:pointer;white-space:nowrap;border-radius:20px;transition:all .15s;margin:.4rem 0}
+.nb:hover{color:var(--tx);background:#f0f6ff}
+.nb.nb-sum.active{color:#fff;background:#0d4a8a;border-color:#0d4a8a;font-weight:700}
+.nb.nb-naver.active{color:#fff;background:#0f9e6e;border-color:#0f9e6e;font-weight:700}
+.nb.nb-google.active{color:#fff;background:#4a9fd4;border-color:#4a9fd4;font-weight:700}
+.nd{width:1px;background:var(--b2);margin:.35rem .2rem}
+
+/* PAGE */
+.pg{display:none;padding:1.4rem 1.75rem 3rem;max-width:1280px;margin:0 auto}.pg.active{display:block}
+
+/* INSIGHT BOX */
+.ins{background:var(--ins-bg);border-radius:var(--r);padding:.9rem 1.1rem;margin-bottom:1.2rem}
+.ins.ins-red{background:#0d4a8a}
+.ins.ins-green{background:#0a6e4c}
+.ins.ins-blue{background:#4a9fd4}
+.ins-l{font-size:13px;font-weight:700;color:#ffffff;letter-spacing:.05em;margin-bottom:.5rem}
+.ins-i{font-size:13px;color:var(--ins-tx);line-height:1.75;padding:.18rem 0 .18rem 1rem;position:relative;border-bottom:1px solid rgba(255,255,255,0.1)}
+.ins-i:last-child{border-bottom:none}
+.ins-i::before{content:"▸";position:absolute;left:0;color:rgba(255,255,255,0.55);font-size:11px;top:.3rem}
+
+/* KPI CARDS */
+.kg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.2rem}
+.kg5{grid-template-columns:repeat(5,1fr)}
+.ki{background:var(--ki-bg);border:1px solid var(--ki-border);border-radius:var(--rs);padding:.8rem 1rem}
+.kl{font-size:11px;color:var(--tx2);margin-bottom:.25rem;font-weight:500}
+.kv{font-size:21px;font-weight:800;color:var(--tx)}
+.ks{font-size:11px;margin-top:.35rem;display:inline-block;padding:2px 8px;border-radius:20px;font-weight:600}
+.ks.ku{background:var(--badge-ok-bg);color:var(--badge-ok-tx)}
+.ks.kd{background:var(--badge-bad-bg);color:var(--badge-bad-tx)}
+.ks.kn{background:var(--badge-neu-bg);color:var(--badge-neu-tx)}
+.kg-label{font-size:12px;font-weight:700;color:var(--bl);margin-bottom:.35rem;padding-left:2px}
+
+/* SEC LABEL */
+.sec{font-size:13px;font-weight:700;color:var(--tx);letter-spacing:0;margin:1.3rem 0 .6rem}
+
+/* TABLE */
+.tw{background:#fff;border:1px solid var(--b);border-radius:0;overflow:hidden;margin-bottom:1.2rem}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{font-size:11px;font-weight:700;color:var(--th-tx);text-align:center;padding:8px 10px;border-bottom:2px solid var(--ki-border);border-right:1px solid var(--ki-border);white-space:nowrap;background:var(--th-bg)}
+th:last-child{border-right:none}
+td{padding:7px 10px;border-bottom:1px solid var(--b);border-right:1px solid rgba(0,0,0,0.06);color:var(--tx);vertical-align:middle;background:#fff;text-align:center}
+td:last-child{border-right:none}
+td.r{text-align:center}
+td.l{text-align:left}
+tr:last-child td{border-bottom:1px solid var(--b)}
+tr:hover td{background:#f5f9ff}
+.tnew td{background:var(--tnew-bg);border-top:2px solid var(--tnew-bd);border-bottom:2px solid var(--tnew-bd);border-right:1px solid rgba(0,0,0,0.06)}
+.tnew td:first-child{border-left:2px solid var(--tnew-bd)}
+.tnew td:last-child{border-right:2px solid var(--tnew-bd)}
+
+/* BADGES */
+.bg{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;white-space:nowrap}
+.bok{background:var(--gnb);color:var(--gnt)}
+.bwa{background:var(--amb);color:#b06d10}
+.bdn{background:var(--rdb);color:var(--rd)}
+.bgy{background:var(--gy);color:var(--gyt)}
+
+/* 네이버 시트 — 연한 초록 테마 */
+#ppc .ki,#pmo .ki{background:#e8f8f2;border-color:#a8dfc8}
+#ppc th,#pmo th{background:#d4f0e4;color:#0a6e4c;border-bottom-color:#a8dfc8;border-right-color:#a8dfc8}
+
+/* BUILD STATUS */
 .build-status{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#b06d10;background:#faebd4;border:1px solid #e8c87a;border-radius:20px;padding:4px 12px}
 .build-status.hidden{display:none}
 .build-spinner{width:10px;height:10px;border:2px solid #e8c87a;border-top-color:#b06d10;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
-/* nav */
-.tabs{display:flex;gap:0;background:var(--nav-bg);border-bottom:2px solid var(--nav-border);overflow-x:auto;padding:0 1rem}
-.tab-btn{background:none;border:none;border-bottom:3px solid transparent;padding:.7rem 1.1rem;font-size:13px;font-weight:600;color:var(--tx2);cursor:pointer;white-space:nowrap;margin-bottom:-2px;transition:.15s}
-.tab-btn.active{color:var(--blt);border-bottom-color:var(--blt)}
-.tab-btn:hover:not(.active){color:var(--tx);border-bottom-color:#c0d0f0}
-/* pages */
-.pg{display:none;padding:1.4rem 1.5rem 3rem}
-.pg.active{display:block}
-/* week selector bar */
-.wk-bar{display:flex;align-items:center;gap:10px;margin-bottom:.9rem;padding:.65rem 1rem;background:#f0f6ff;border-radius:var(--rs);border:1px solid var(--ki-border)}
-.wk-bar select{font-size:13px;font-weight:600;padding:4px 12px;border:1px solid var(--ki-border);border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none}
-.wk-bar-g{background:#e8f0fa;border-color:#b8d8f0}
-.wk-bar-g select{border-color:#b8d8f0}
-/* section title */
-.sec-title{font-size:16px;font-weight:700;color:var(--tx);margin-bottom:.8rem;padding-bottom:.4rem;border-bottom:2px solid var(--nav-border)}
-/* KPI grid */
-.kg{display:grid;grid-template-columns:repeat(4,1fr);gap:.65rem;margin-bottom:.8rem}
-.kg5{grid-template-columns:repeat(5,1fr)}
-.ki{background:var(--ki-bg);border:1px solid var(--ki-border);border-radius:var(--rs);padding:.7rem .9rem}
-.kl{font-size:11px;color:var(--tx3);font-weight:600;margin-bottom:2px}
-.kv{font-size:18px;font-weight:700;color:var(--tx)}
-.ks{font-size:11px;font-weight:600;margin-top:3px;border-radius:20px;padding:1px 6px;display:inline-block}
-.kn{color:var(--tx3);background:#f0f4f8}.ku{color:#0a6e4c;background:#e8f7f1}.kd{color:var(--rd);background:#fff0f0}
-.kg-label{font-size:12px;font-weight:700;color:var(--blt);margin-bottom:.35rem;padding-left:2px}
-/* comment box */
-.cb{background:#fff;border:1px solid var(--ki-border);border-radius:var(--rs);padding:1rem 1.2rem;margin:.8rem 0;font-size:13px;line-height:1.75}
-.cb h4{font-size:12px;font-weight:700;color:var(--blt);margin-bottom:.5rem;padding-bottom:.3rem;border-bottom:1px solid var(--ki-border)}
-.ins-i{font-size:13px;color:var(--tx);line-height:1.75}
-/* table */
-.tw{overflow-x:auto;margin:.5rem 0}
-table{width:100%;border-collapse:collapse;font-size:12px;min-width:600px}
-thead{background:var(--bk);color:#fff}
-thead th{padding:.5rem .6rem;text-align:center;font-weight:600;font-size:11px;white-space:nowrap}
-tbody tr:nth-child(even){background:#f8faff}
-tbody tr:hover{background:#eef2ff}
-td{padding:.45rem .6rem;border-bottom:1px solid #e2e8f0;text-align:center;white-space:nowrap}
-td.r{text-align:right}
-td.l{text-align:left}
-td.hl{background:#fff8c5;font-weight:700}   /* week highlight */
-.cpa-ok{color:var(--gnt);font-weight:700}
-.cpa-hi{color:var(--rd);font-weight:700}
-/* keyword table */
-.kw-section{margin-top:1rem}
+
+/* KEYWORD SECTION */
+.kw-section{margin-top:.5rem}
 .kw-label{font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:.35rem}
-/* auto section */
-.auto-kw-block{margin-bottom:1.2rem}
-.auto-kw-title{font-size:13px;font-weight:700;color:var(--tx);margin-bottom:.4rem}
-/* badge */
-.bg{font-size:11px;font-weight:600;border-radius:20px;padding:1px 7px;display:inline-block}
-.bok{color:#0a6e4c;background:#e8f7f1}.bwa{color:#b06d10;background:#faebd4}.bdn{color:var(--rd);background:#fff0f0}
+
 @media(max-width:768px){.pg{padding:1rem 1rem 2rem}.kg{grid-template-columns:repeat(2,1fr)}.kg5{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -83,10 +114,7 @@ td.hl{background:#fff8c5;font-weight:700}   /* week highlight */
 
 <!-- ───── 상단 바 ───── -->
 <div class="topbar">
-  <div>
-    <span class="t-title">크린토피아 <span>홈클리닝</span> · Weekly</span>
-    <span class="pill">{{YEAR}}년 {{MONTH}}월</span>
-  </div>
+  <div><span class="t-title">크린토피아 <span>홈클리닝</span> · Weekly</span><span class="pill">{{YEAR}}년 {{MONTH}}월</span></div>
   <div style="display:flex;align-items:center;gap:12px">
     <span class="build-status" id="build-status"><span class="build-spinner"></span>데이터 업데이트 중</span>
     <div class="t-meta">업데이트: {{UPDATE_DATE}}</div>
@@ -94,42 +122,44 @@ td.hl{background:#fff8c5;font-weight:700}   /* week highlight */
 </div>
 
 <!-- ───── 탭 네비게이션 ───── -->
-<nav class="tabs">
-  <button class="tab-btn active" onclick="showTab('sum',this)">Summary</button>
-  <button class="tab-btn" onclick="showTab('ppc',this)">네이버 PC</button>
-  <button class="tab-btn" onclick="showTab('pmo',this)">네이버 MO</button>
-  <button class="tab-btn" onclick="showTab('pau',this)">자동입찰</button>
-  <button class="tab-btn" onclick="showTab('pgb',this)">구글 브랜드</button>
-  <button class="tab-btn" onclick="showTab('pgc',this)">구글 경쟁사</button>
-  <button class="tab-btn" onclick="showTab('pgg',this)">구글 일반</button>
-</nav>
+<div class="nav">
+  <button class="nb nb-sum active" onclick="show('p0',this)">Summary</button>
+  <div class="nd"></div>
+  <button class="nb nb-naver" onclick="show('ppc',this)">네이버 PC</button>
+  <button class="nb nb-naver" onclick="show('pmo',this)">네이버 MO</button>
+  <div class="nd"></div>
+  <button class="nb nb-google" onclick="show('pgb',this)">구글 브랜드</button>
+  <button class="nb nb-google" onclick="show('pgc',this)">구글 경쟁사</button>
+  <button class="nb nb-google" onclick="show('pgg',this)">구글 일반</button>
+</div>
 
 <!-- ═══════════ Summary ═══════════ -->
-<div id="tab-sum" class="pg active">
-  <div class="wk-bar">
+<div id="p0" class="pg active">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem;padding:.65rem 1rem;background:#f0f6ff;border-radius:var(--rs);border:1px solid var(--ki-border)">
     <span style="font-size:12px;font-weight:700;color:var(--blt)">주차 선택</span>
-    <select id="sum-week-sel" onchange="onWeekChange(this.value)"></select>
+    <select id="sum-week-sel" onchange="onWeekChange(this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid var(--ki-border);border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
     <span id="sum-range-label" style="font-size:12px;color:var(--tx2)"></span>
   </div>
 
-  <div id="sum-title" class="sec-title"></div>
+  <div class="ins ins-red" id="sum-cmt-box">
+    <div class="ins-l" id="sum-title">Summary</div>
+    <div id="cmt-sum"></div>
+  </div>
 
   <div class="kg-label">네이버 SA</div>
-  <div class="kg" id="sum-kg-n">
+  <div class="kg">
     <div class="ki"><div class="kl">네이버 광고비</div><div class="kv" id="kpi-n-spend">—</div><div class="ks kn" id="kpi-n-spend-bdg">—</div></div>
     <div class="ki"><div class="kl">네이버 CPC</div><div class="kv" id="kpi-n-cpc">—</div><div class="ks kn" id="kpi-n-cpc-bdg">—</div></div>
     <div class="ki"><div class="kl">네이버 CPA</div><div class="kv" id="kpi-n-cpa">—</div><div class="ks kn" id="kpi-n-cpa-bdg">—</div></div>
     <div class="ki"><div class="kl">네이버 CVR</div><div class="kv" id="kpi-n-cvr">—</div><div class="ks kn" id="kpi-n-cvr-bdg">—</div></div>
   </div>
   <div class="kg-label">구글 SA</div>
-  <div class="kg" id="sum-kg-g">
+  <div class="kg">
     <div class="ki"><div class="kl">구글 광고비</div><div class="kv" id="kpi-g-spend">—</div><div class="ks kn" id="kpi-g-spend-bdg">—</div></div>
     <div class="ki"><div class="kl">구글 CPC</div><div class="kv" id="kpi-g-cpc">—</div><div class="ks kn" id="kpi-g-cpc-bdg">—</div></div>
     <div class="ki"><div class="kl">구글 CPA</div><div class="kv" id="kpi-g-cpa">—</div><div class="ks kn" id="kpi-g-cpa-bdg">—</div></div>
     <div class="ki"><div class="kl">구글 CVR</div><div class="kv" id="kpi-g-cvr">—</div><div class="ks kn" id="kpi-g-cvr-bdg">—</div></div>
   </div>
-
-  <div class="cb"><h4>Summary 코멘트</h4><div class="ins-i" id="cmt-sum">—</div></div>
 
   <div class="tw">
     <table>
@@ -140,14 +170,17 @@ td.hl{background:#fff8c5;font-weight:700}   /* week highlight */
 </div>
 
 <!-- ═══════════ 네이버 PC ═══════════ -->
-<div id="tab-ppc" class="pg">
-  <div class="wk-bar">
-    <span style="font-size:12px;font-weight:700;color:#0a6e4c">주차 선택</span>
-    <select id="ppc-week-sel" onchange="onSecWeekChange('ppc',this.value)" style="border-color:#a8dfc8"></select>
+<div id="ppc" class="pg">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem;padding:.65rem 1rem;background:#f0f6ff;border-radius:var(--rs);border:1px solid var(--ki-border)">
+    <span style="font-size:12px;font-weight:700;color:var(--blt)">주차 선택</span>
+    <select id="ppc-week-sel" onchange="onSecWeekChange('ppc',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid var(--ki-border);border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
   </div>
-  <div id="ppc-title" class="sec-title"></div>
+  <div class="sec" id="ppc-title">네이버 SA · PC</div>
   <div class="kg kg5" id="ppc-kg"></div>
-  <div class="cb"><h4>네이버 PC 코멘트</h4><div class="ins-i" id="cmt-ppc">—</div></div>
+  <div class="ins ins-green">
+    <div class="ins-l">네이버 PC 코멘트</div>
+    <div id="cmt-ppc"></div>
+  </div>
   <div class="tw"><table><thead><tr><th>날짜</th><th>요일</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th><th>순위</th></tr></thead><tbody id="ppc-tbl"></tbody></table></div>
   <div class="kw-section">
     <div class="kw-label" id="ppc-conv-sec">전환 발생 키워드</div>
@@ -158,14 +191,17 @@ td.hl{background:#fff8c5;font-weight:700}   /* week highlight */
 </div>
 
 <!-- ═══════════ 네이버 MO ═══════════ -->
-<div id="tab-pmo" class="pg">
-  <div class="wk-bar">
-    <span style="font-size:12px;font-weight:700;color:#0a6e4c">주차 선택</span>
-    <select id="pmo-week-sel" onchange="onSecWeekChange('pmo',this.value)" style="border-color:#a8dfc8"></select>
+<div id="pmo" class="pg">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem;padding:.65rem 1rem;background:#f0f6ff;border-radius:var(--rs);border:1px solid var(--ki-border)">
+    <span style="font-size:12px;font-weight:700;color:var(--blt)">주차 선택</span>
+    <select id="pmo-week-sel" onchange="onSecWeekChange('pmo',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid var(--ki-border);border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
   </div>
-  <div id="pmo-title" class="sec-title"></div>
+  <div class="sec" id="pmo-title">네이버 SA · MO</div>
   <div class="kg kg5" id="pmo-kg"></div>
-  <div class="cb"><h4>네이버 MO 코멘트</h4><div class="ins-i" id="cmt-pmo">—</div></div>
+  <div class="ins ins-green">
+    <div class="ins-l">네이버 MO 코멘트</div>
+    <div id="cmt-pmo"></div>
+  </div>
   <div class="tw"><table><thead><tr><th>날짜</th><th>요일</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th><th>순위</th></tr></thead><tbody id="pmo-tbl"></tbody></table></div>
   <div class="kw-section">
     <div class="kw-label" id="pmo-conv-sec">전환 발생 키워드</div>
@@ -175,26 +211,18 @@ td.hl{background:#fff8c5;font-weight:700}   /* week highlight */
   </div>
 </div>
 
-<!-- ═══════════ 자동입찰 ═══════════ -->
-<div id="tab-pau" class="pg">
-  <div class="wk-bar">
-    <span style="font-size:12px;font-weight:700;color:#0a6e4c">주차 선택</span>
-    <select id="pau-week-sel" onchange="onSecWeekChange('pau',this.value)" style="border-color:#a8dfc8"></select>
-  </div>
-  <div id="pau-title" class="sec-title"></div>
-  <div class="cb"><h4>자동입찰 코멘트</h4><div class="ins-i" id="cmt-pau">—</div></div>
-  <div id="pau-auto-area"></div>
-</div>
-
 <!-- ═══════════ 구글 브랜드 ═══════════ -->
-<div id="tab-pgb" class="pg">
-  <div class="wk-bar wk-bar-g">
-    <span style="font-size:12px;font-weight:700;color:#0d4a8a">주차 선택</span>
-    <select id="pgb-week-sel" onchange="onSecWeekChange('pgb',this.value)"></select>
+<div id="pgb" class="pg">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem;padding:.65rem 1rem;background:#f0f6ff;border-radius:var(--rs);border:1px solid var(--ki-border)">
+    <span style="font-size:12px;font-weight:700;color:var(--blt)">주차 선택</span>
+    <select id="pgb-week-sel" onchange="onSecWeekChange('pgb',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid var(--ki-border);border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
   </div>
-  <div id="pgb-title" class="sec-title"></div>
+  <div class="sec" id="pgb-title">구글 SA · 브랜드</div>
   <div class="kg kg5" id="pgb-kg"></div>
-  <div class="cb"><h4>구글 브랜드 코멘트</h4><div class="ins-i" id="cmt-pgb">—</div></div>
+  <div class="ins ins-blue">
+    <div class="ins-l">구글 브랜드 코멘트</div>
+    <div id="cmt-pgb"></div>
+  </div>
   <div class="tw"><table><thead><tr><th>날짜</th><th>요일</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th></tr></thead><tbody id="pgb-tbl"></tbody></table></div>
   <div class="kw-section">
     <div class="kw-label" id="pgb-kw-sec">키워드별 성과</div>
@@ -203,14 +231,17 @@ td.hl{background:#fff8c5;font-weight:700}   /* week highlight */
 </div>
 
 <!-- ═══════════ 구글 경쟁사 ═══════════ -->
-<div id="tab-pgc" class="pg">
-  <div class="wk-bar wk-bar-g">
-    <span style="font-size:12px;font-weight:700;color:#0d4a8a">주차 선택</span>
-    <select id="pgc-week-sel" onchange="onSecWeekChange('pgc',this.value)"></select>
+<div id="pgc" class="pg">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem;padding:.65rem 1rem;background:#f0f6ff;border-radius:var(--rs);border:1px solid var(--ki-border)">
+    <span style="font-size:12px;font-weight:700;color:var(--blt)">주차 선택</span>
+    <select id="pgc-week-sel" onchange="onSecWeekChange('pgc',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid var(--ki-border);border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
   </div>
-  <div id="pgc-title" class="sec-title"></div>
+  <div class="sec" id="pgc-title">구글 SA · 경쟁사</div>
   <div class="kg kg5" id="pgc-kg"></div>
-  <div class="cb"><h4>구글 경쟁사 코멘트</h4><div class="ins-i" id="cmt-pgc">—</div></div>
+  <div class="ins ins-blue">
+    <div class="ins-l">구글 경쟁사 코멘트</div>
+    <div id="cmt-pgc"></div>
+  </div>
   <div class="tw"><table><thead><tr><th>날짜</th><th>요일</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th></tr></thead><tbody id="pgc-tbl"></tbody></table></div>
   <div class="kw-section">
     <div class="kw-label" id="pgc-kw-sec">키워드별 성과</div>
@@ -219,14 +250,17 @@ td.hl{background:#fff8c5;font-weight:700}   /* week highlight */
 </div>
 
 <!-- ═══════════ 구글 일반 ═══════════ -->
-<div id="tab-pgg" class="pg">
-  <div class="wk-bar wk-bar-g">
-    <span style="font-size:12px;font-weight:700;color:#0d4a8a">주차 선택</span>
-    <select id="pgg-week-sel" onchange="onSecWeekChange('pgg',this.value)"></select>
+<div id="pgg" class="pg">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem;padding:.65rem 1rem;background:#f0f6ff;border-radius:var(--rs);border:1px solid var(--ki-border)">
+    <span style="font-size:12px;font-weight:700;color:var(--blt)">주차 선택</span>
+    <select id="pgg-week-sel" onchange="onSecWeekChange('pgg',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid var(--ki-border);border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
   </div>
-  <div id="pgg-title" class="sec-title"></div>
+  <div class="sec" id="pgg-title">구글 SA · 일반</div>
   <div class="kg kg5" id="pgg-kg"></div>
-  <div class="cb"><h4>구글 일반 코멘트</h4><div class="ins-i" id="cmt-pgg">—</div></div>
+  <div class="ins ins-blue">
+    <div class="ins-l">구글 일반 코멘트</div>
+    <div id="cmt-pgg"></div>
+  </div>
   <div class="tw"><table><thead><tr><th>날짜</th><th>요일</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th></tr></thead><tbody id="pgg-tbl"></tbody></table></div>
   <div class="kw-section">
     <div class="kw-label" id="pgg-kw-sec">키워드별 성과</div>
@@ -244,10 +278,10 @@ const DATA_YEAR       = {{YEAR}};
 const DATA_MONTH      = {{MONTH}};
 
 // ── 탭 전환 ──
-function showTab(id, btn){
+function show(id, btn){
   document.querySelectorAll('.pg').forEach(el=>el.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
-  document.getElementById('tab-'+id).classList.add('active');
+  document.querySelectorAll('.nb').forEach(el=>el.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
   if(btn) btn.classList.add('active');
 }
 
@@ -322,17 +356,17 @@ function _renderDailyTable(tbodyId, rows, hasRank){
   if(!tb||!rows||!rows.length){if(tb)tb.innerHTML='<tr><td colspan="12">데이터 없음</td></tr>';return;}
   tb.innerHTML=rows.map(r=>{
     const cpaCls=r.cpa>0&&r.cpa<=TARGET_CPA?' class="cpa-ok"':r.cpa>TARGET_CPA*1.5?' class="cpa-hi"':'';
-    const rank=hasRank?`<td class="r">${r.rank>0?r.rank:'—'}</td>`:'';
+    const rank=hasRank?`<td>${r.rank>0?r.rank:'—'}</td>`:'';
     return `<tr>
       <td>${r.date}</td><td>${r.day}</td>
-      <td class="r">${r.imp?r.imp.toLocaleString():'—'}</td>
-      <td class="r">${r.clk?r.clk.toLocaleString():'—'}</td>
-      <td class="r">${r.spend?_fmtSpend(r.spend):'—'}</td>
-      <td class="r">${r.ctr?r.ctr+'%':'—'}</td>
-      <td class="r">${r.cpc?r.cpc.toLocaleString()+'원':'—'}</td>
-      <td class="r">${r.conv}건</td>
-      <td class="r">${r.cvr?r.cvr+'%':'—'}</td>
-      <td class="r"${cpaCls}>${r.cpa?r.cpa.toLocaleString()+'원':'—'}</td>
+      <td>${r.imp?r.imp.toLocaleString():'—'}</td>
+      <td>${r.clk?r.clk.toLocaleString():'—'}</td>
+      <td>${r.spend?_fmtSpend(r.spend):'—'}</td>
+      <td>${r.ctr?r.ctr+'%':'—'}</td>
+      <td>${r.cpc?r.cpc.toLocaleString()+'원':'—'}</td>
+      <td>${r.conv}건</td>
+      <td>${r.cvr?r.cvr+'%':'—'}</td>
+      <td${cpaCls}>${r.cpa?r.cpa.toLocaleString()+'원':'—'}</td>
       ${rank}
     </tr>`;
   }).join('');
@@ -358,15 +392,15 @@ function _renderSumTable(tbodyId, wkData){
     const gCpa=gCv>0?Math.round(gSp/gCv):0;
     const nCpaCls=nCpa>0&&nCpa<=TARGET_CPA?' class="cpa-ok"':nCpa>TARGET_CPA*1.5?' class="cpa-hi"':'';
     const gCpaCls=gCpa>0&&gCpa<=TARGET_CPA?' class="cpa-ok"':gCpa>TARGET_CPA*1.5?' class="cpa-hi"':'';
-    const day=np.day||'';
+    const day=np.day||nm.day||'';
     return `<tr>
       <td>${d}</td><td>${day}</td>
-      <td class="r">${nSp?_fmtSpend(nSp):'—'}</td>
-      <td class="r">${nCv}건</td>
-      <td class="r"${nCpaCls}>${nCpa?nCpa.toLocaleString()+'원':'—'}</td>
-      <td class="r">${gSp?_fmtSpend(gSp):'—'}</td>
-      <td class="r">${gCv}건</td>
-      <td class="r"${gCpaCls}>${gCpa?gCpa.toLocaleString()+'원':'—'}</td>
+      <td>${nSp?_fmtSpend(nSp):'—'}</td>
+      <td>${nCv}건</td>
+      <td${nCpaCls}>${nCpa?nCpa.toLocaleString()+'원':'—'}</td>
+      <td>${gSp?_fmtSpend(gSp):'—'}</td>
+      <td>${gCv}건</td>
+      <td${gCpaCls}>${gCpa?gCpa.toLocaleString()+'원':'—'}</td>
     </tr>`;
   }).join('');
 }
@@ -383,14 +417,14 @@ function _kwRow(k){
   const cpaHtml=k.conv>0?k.cpa.toLocaleString():'—';
   const cpaSt=k.conv>0&&k.cpa>TARGET_CPA*3?' style="color:var(--rd)"':k.conv>0&&k.cpa>TARGET_CPA?' style="color:#b06d10"':'';
   return `<tr><td class="l">[${k.kw}]</td>
-    <td class="r">${k.imp?k.imp.toLocaleString():'—'}</td>
-    <td class="r">${k.clk?k.clk.toLocaleString():'—'}</td>
-    <td class="r">${k.spend?_fmtSpend(k.spend):'—'}</td>
-    <td class="r">${k.ctr?k.ctr+'%':'—'}</td>
-    <td class="r">${k.cpc?k.cpc.toLocaleString():'—'}</td>
-    <td class="r">${k.conv}건</td>
-    <td class="r">${k.cvr?k.cvr+'%':'—'}</td>
-    <td class="r"${cpaSt}>${cpaHtml}</td>
+    <td>${k.imp?k.imp.toLocaleString():'—'}</td>
+    <td>${k.clk?k.clk.toLocaleString():'—'}</td>
+    <td>${k.spend?_fmtSpend(k.spend):'—'}</td>
+    <td>${k.ctr?k.ctr+'%':'—'}</td>
+    <td>${k.cpc?k.cpc.toLocaleString():'—'}</td>
+    <td>${k.conv}건</td>
+    <td>${k.cvr?k.cvr+'%':'—'}</td>
+    <td${cpaSt}>${cpaHtml}</td>
     <td>${_kwBadge(k.conv,k.cpa)}</td></tr>`;
 }
 function _renderNaverKwTables(pageId, kwData, weekLabel){
@@ -419,66 +453,17 @@ function _renderGoogleKwTable(pageId, kwData, weekLabel){
   tb.innerHTML=sorted.length?sorted.map(_kwRow).join(''):'<tr><td colspan="10">데이터 없음</td></tr>';
 }
 
-// ── 자동입찰 섹션 ──
-const AUTO_KWS = ["입주청소","이사청소","입주청소비용","입주청소가격","입주청소전문"];
-
-function _renderAutoArea(wkData, prevData, weekLabel){
-  const area=document.getElementById('pau-auto-area');
-  if(!area) return;
-  let html='';
-  for(const kw of AUTO_KWS){
-    html+=`<div class="auto-kw-block">`;
-    for(const dev of ['MO','PC']){
-      const tag=`[${dev}] ${kw}`;
-      const rows=(wkData.auto_daily?.[kw]?.[dev])||[];
-      const wk=(wkData.auto_weekly?.[kw]?.[dev])||{};
-      const pw=(prevData?.auto_weekly?.[kw]?.[dev])||null;
-      // 주간 합산 배지
-      let wkSumHtml='';
-      if(wk.spend>0){
-        const cvB=pw?_convBadge(wk.conv,pw.conv):{text:'전주 데이터 없음',cls:'kn'};
-        const cpaB=pw&&pw.cpa>0?_diffBadge(wk.cpa,pw.cpa,true):{text:'',cls:'kn'};
-        wkSumHtml=`<span style="font-size:12px;color:var(--tx2)"> · 전환 ${wk.conv}건 CPA ${wk.cpa?wk.cpa.toLocaleString()+'원':'—'} 노출순위 ${wk.rank||'—'}위</span>`
-          +` <span class="ks ${cvB.cls}">${cvB.text}</span>`
-          +(cpaB.text?` <span class="ks ${cpaB.cls}">${cpaB.text}</span>`:'');
-      } else {
-        wkSumHtml=`<span style="font-size:12px;color:var(--tx3)"> · 주간 데이터 없음</span>`;
-      }
-      html+=`<div style="margin-bottom:.6rem">
-        <div class="auto-kw-title">${tag}${wkSumHtml}</div>`;
-      if(rows.length>0&&wk.spend>0){
-        html+=`<div class="tw"><table>
-          <thead><tr><th>날짜</th><th>요일</th><th>광고비</th><th>전환</th><th>CPA</th><th>CPC</th><th>노출순위</th></tr></thead>
-          <tbody>${rows.map(r=>{
-            const cpaCls=r.cpa>0&&r.cpa<=TARGET_CPA?'class="cpa-ok"':r.cpa>TARGET_CPA*1.5?'class="cpa-hi"':'';
-            return `<tr><td>${r.date}</td><td>${r.day}</td>
-              <td class="r">${r.spend?_fmtSpend(r.spend):'—'}</td>
-              <td class="r">${r.conv}건</td>
-              <td class="r" ${cpaCls}>${r.cpa?r.cpa.toLocaleString()+'원':'—'}</td>
-              <td class="r">${r.cpc?r.cpc.toLocaleString()+'원':'—'}</td>
-              <td class="r">${r.rank>0?r.rank+'위':'—'}</td></tr>`;
-          }).join('')}</tbody></table></div>`;
-      }
-      html+='</div>';
-    }
-    html+='</div>';
-  }
-  area.innerHTML=html;
-}
-
-// ── 코멘트 설정 ──
+// ── 코멘트 렌더링 ──
 function _setCmt(id, txt){
   const el=document.getElementById(id);
   if(!el) return;
-  if(!txt){el.textContent='—';return;}
-  // 줄바꿈 처리
-  el.innerHTML=txt.replace(/\n/g,'<br>').replace(/\.\s+(?=[가-힣\[\(A-Za-z0-9\<])/g,'.<br>');
+  if(!txt){el.innerHTML='<div class="ins-i">—</div>';return;}
+  const lines=txt.split('\n').filter(l=>l.trim());
+  el.innerHTML=lines.map(l=>`<div class="ins-i">${l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`).join('');
 }
 
 // ── Summary KPI ──
 function _renderSummaryKpi(curr, prev){
-  const lbl='전주';
-  // 네이버
   _setTxt('kpi-n-spend', _fmtSpend(curr.n_spend));
   _setTxt('kpi-n-cpc',   _fmtNum(curr.n_cpc)+'원');
   _setTxt('kpi-n-cpa',   _fmtNum(curr.n_cpa)+'원');
@@ -493,7 +478,6 @@ function _renderSummaryKpi(curr, prev){
       const el=document.getElementById(id); if(el){el.textContent='전주 데이터 없음';el.className='ks kn';}
     });
   }
-  // 구글
   _setTxt('kpi-g-spend', _fmtSpend(curr.g_spend));
   _setTxt('kpi-g-cpc',   _fmtNum(curr.g_cpc)+'원');
   _setTxt('kpi-g-cpa',   _fmtNum(curr.g_cpa)+'원');
@@ -542,31 +526,25 @@ function onWeekChange(weekLabel){
   _updateSubPage('pgb','gb','gb_kw','구글 SA · 브랜드',false,false,weekLabel,curr,prev);
   _updateSubPage('pgc','gc','gc_kw','구글 SA · 경쟁사',false,false,weekLabel,curr,prev);
   _updateSubPage('pgg','gg','gg_kw','구글 SA · 일반',false,false,weekLabel,curr,prev);
-  _updateAutoPage(weekLabel,curr,prev);
 
   // 서브페이지 드롭다운 동기화
-  ['ppc','pmo','pgb','pgc','pgg','pau'].forEach(pid=>{
+  ['ppc','pmo','pgb','pgc','pgg'].forEach(pid=>{
     const sel=document.getElementById(pid+'-week-sel');
     if(sel) sel.value=weekLabel;
   });
 }
 
 function _updateSubPage(pageId, dataKey, kwKey, pageLabel, hasRank, isNaver, weekLabel, curr, prev){
-  // title
   const t=document.getElementById(pageId+'-title');
   if(t){
     const cmp=prev?` — 전주(${prev.range}) 대비`:'';
     t.textContent=`${pageLabel} — ${weekLabel} (${curr.range})${cmp}`;
   }
-  // KPI grid
   _renderKpiGrid(pageId+'-kg', _pageCards(curr,prev,dataKey));
-  // table
   _renderDailyTable(pageId+'-tbl', curr.daily_rows?.[dataKey], hasRank);
-  // keyword
   const kwData=curr[kwKey]||[];
   if(isNaver) _renderNaverKwTables(pageId, kwData, weekLabel);
   else _renderGoogleKwTable(pageId, kwData, weekLabel);
-  // comment
   const cmt=allWeeklyComments[weekLabel];
   if(cmt){
     const cmtKey={ppc:'N_PC',pmo:'N_MO',pgb:'G_BRAND',pgc:'G_COMP',pgg:'G_GEN'}[pageId];
@@ -574,40 +552,46 @@ function _updateSubPage(pageId, dataKey, kwKey, pageLabel, hasRank, isNaver, wee
   }
 }
 
-function _updateAutoPage(weekLabel, curr, prev){
-  const t=document.getElementById('pau-title');
-  if(t){
-    const cmp=prev?` — 전주(${prev.range}) 대비`:'';
-    t.textContent=`네이버 자동입찰 — ${weekLabel} (${curr.range})${cmp}`;
-  }
-  _renderAutoArea(curr, prev, weekLabel);
-  const cmt=allWeeklyComments[weekLabel];
-  if(cmt) _setCmt('cmt-pau', cmt.AUTO);
-}
-
 function onSecWeekChange(pageId, weekLabel){
   const idx=WL.indexOf(weekLabel);
   const curr=allWeeklyKpi[weekLabel];
   const prevLabel=idx>0?WL[idx-1]:null;
   const prev=prevLabel?allWeeklyKpi[prevLabel]:null;
-  if(pageId==='pau') _updateAutoPage(weekLabel,curr,prev);
-  else{
-    const cfg={
-      ppc:{key:'npc',kwKey:'npc_kw',label:'네이버 SA · PC',rank:true,naver:true},
-      pmo:{key:'nmo',kwKey:'nmo_kw',label:'네이버 SA · MO',rank:true,naver:true},
-      pgb:{key:'gb', kwKey:'gb_kw', label:'구글 SA · 브랜드',rank:false,naver:false},
-      pgc:{key:'gc', kwKey:'gc_kw', label:'구글 SA · 경쟁사',rank:false,naver:false},
-      pgg:{key:'gg', kwKey:'gg_kw', label:'구글 SA · 일반',rank:false,naver:false},
-    }[pageId];
-    if(cfg) _updateSubPage(pageId,cfg.key,cfg.kwKey,cfg.label,cfg.rank,cfg.naver,weekLabel,curr,prev);
+  const cfg={
+    ppc:{key:'npc',kwKey:'npc_kw',label:'네이버 SA · PC',rank:true,naver:true},
+    pmo:{key:'nmo',kwKey:'nmo_kw',label:'네이버 SA · MO',rank:true,naver:true},
+    pgb:{key:'gb', kwKey:'gb_kw', label:'구글 SA · 브랜드',rank:false,naver:false},
+    pgc:{key:'gc', kwKey:'gc_kw', label:'구글 SA · 경쟁사',rank:false,naver:false},
+    pgg:{key:'gg', kwKey:'gg_kw', label:'구글 SA · 일반',rank:false,naver:false},
+  }[pageId];
+  if(cfg) _updateSubPage(pageId,cfg.key,cfg.kwKey,cfg.label,cfg.rank,cfg.naver,weekLabel,curr,prev);
+
+  // 동기화
+  const sumSel=document.getElementById('sum-week-sel');
+  if(sumSel) sumSel.value=weekLabel;
+  ['ppc','pmo','pgb','pgc','pgg'].forEach(pid=>{
+    if(pid===pageId) return;
+    const sel=document.getElementById(pid+'-week-sel');
+    if(sel) sel.value=weekLabel;
+  });
+  // Summary도 업데이트
+  _renderSummaryKpi(curr, prev);
+  _renderSumTable('sum-tbl', curr);
+  const titleEl=document.getElementById('sum-title');
+  if(titleEl){
+    const cmp=prev?` — 전주(${prev.range}) 대비`:'';
+    titleEl.textContent=`${weekLabel} (${curr.range}) 요약${cmp}`;
   }
+  const rangeEl=document.getElementById('sum-range-label');
+  if(rangeEl) rangeEl.textContent=curr.range;
+  const cmt=allWeeklyComments[weekLabel];
+  if(cmt) _setCmt('cmt-sum', cmt.SUMMARY);
 }
 
 // ── 초기화 ──
 (function(){
   const last=WL[WL.length-1];
-  // 드롭다운 공통 초기화
-  ['sum-week-sel','ppc-week-sel','pmo-week-sel','pau-week-sel','pgb-week-sel','pgc-week-sel','pgg-week-sel'].forEach(selId=>{
+  ['sum-week-sel','ppc-week-sel','pmo-week-sel','pgb-week-sel','pgc-week-sel','pgg-week-sel'].forEach(selId=>{
     const sel=document.getElementById(selId);
     if(!sel) return;
     WL.forEach(lbl=>{
