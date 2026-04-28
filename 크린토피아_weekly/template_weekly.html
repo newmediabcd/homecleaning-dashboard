@@ -153,25 +153,20 @@ tr:hover td{background:#f5f9ff}
     <div class="ki"><div class="kl">네이버 CPA</div><div class="kv" id="kpi-n-cpa">—</div><div class="ks kn" id="kpi-n-cpa-bdg">—</div></div>
     <div class="ki"><div class="kl">네이버 CVR</div><div class="kv" id="kpi-n-cvr">—</div><div class="ks kn" id="kpi-n-cvr-bdg">—</div></div>
   </div>
-  <div class="kg-label">구글 SA</div>
+  <div class="tw"><table><thead><tr><th>항목</th><th>이번주</th><th>전주</th><th>증감</th></tr></thead><tbody id="sum-n-cmp-tbl"></tbody></table></div>
+
+  <div class="kg-label" style="margin-top:.8rem">구글 SA</div>
   <div class="kg">
     <div class="ki"><div class="kl">구글 광고비</div><div class="kv" id="kpi-g-spend">—</div><div class="ks kn" id="kpi-g-spend-bdg">—</div></div>
     <div class="ki"><div class="kl">구글 CPC</div><div class="kv" id="kpi-g-cpc">—</div><div class="ks kn" id="kpi-g-cpc-bdg">—</div></div>
     <div class="ki"><div class="kl">구글 CPA</div><div class="kv" id="kpi-g-cpa">—</div><div class="ks kn" id="kpi-g-cpa-bdg">—</div></div>
     <div class="ki"><div class="kl">구글 CVR</div><div class="kv" id="kpi-g-cvr">—</div><div class="ks kn" id="kpi-g-cvr-bdg">—</div></div>
   </div>
-
-  <div class="tw">
-    <table>
-      <thead><tr><th>날짜</th><th>요일</th><th>네이버 광고비</th><th>네이버 전환</th><th>네이버 CPA</th><th>구글 광고비</th><th>구글 전환</th><th>구글 CPA</th></tr></thead>
-      <tbody id="sum-tbl"></tbody>
-    </table>
-  </div>
+  <div class="tw"><table><thead><tr><th>항목</th><th>이번주</th><th>전주</th><th>증감</th></tr></thead><tbody id="sum-g-cmp-tbl"></tbody></table></div>
 </div>
 
 <!-- ═══════════ 네이버 PC ═══════════ -->
 <div id="ppc" class="pg">
-  <div class="sec">네이버 SA · PC</div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem;padding:.65rem 1rem;background:#f0f6ff;border-radius:var(--rs);border:1px solid var(--ki-border)">
     <span style="font-size:12px;font-weight:700;color:var(--blt)">주차 선택</span>
     <select id="ppc-week-sel" onchange="onSecWeekChange('ppc',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid var(--ki-border);border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
@@ -193,7 +188,6 @@ tr:hover td{background:#f5f9ff}
 
 <!-- ═══════════ 네이버 MO ═══════════ -->
 <div id="pmo" class="pg">
-  <div class="sec">네이버 SA · MO</div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem;padding:.65rem 1rem;background:#f0f6ff;border-radius:var(--rs);border:1px solid var(--ki-border)">
     <span style="font-size:12px;font-weight:700;color:var(--blt)">주차 선택</span>
     <select id="pmo-week-sel" onchange="onSecWeekChange('pmo',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid var(--ki-border);border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
@@ -215,7 +209,6 @@ tr:hover td{background:#f5f9ff}
 
 <!-- ═══════════ 구글 브랜드 ═══════════ -->
 <div id="pgb" class="pg">
-  <div class="sec">구글 브랜드</div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem;padding:.65rem 1rem;background:#f0f6ff;border-radius:var(--rs);border:1px solid var(--ki-border)">
     <span style="font-size:12px;font-weight:700;color:var(--blt)">주차 선택</span>
     <select id="pgb-week-sel" onchange="onSecWeekChange('pgb',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid var(--ki-border);border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
@@ -235,7 +228,6 @@ tr:hover td{background:#f5f9ff}
 
 <!-- ═══════════ 구글 경쟁사 ═══════════ -->
 <div id="pgc" class="pg">
-  <div class="sec">구글 경쟁사</div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem;padding:.65rem 1rem;background:#f0f6ff;border-radius:var(--rs);border:1px solid var(--ki-border)">
     <span style="font-size:12px;font-weight:700;color:var(--blt)">주차 선택</span>
     <select id="pgc-week-sel" onchange="onSecWeekChange('pgc',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid var(--ki-border);border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
@@ -255,7 +247,6 @@ tr:hover td{background:#f5f9ff}
 
 <!-- ═══════════ 구글 일반 ═══════════ -->
 <div id="pgg" class="pg">
-  <div class="sec">구글 일반</div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem;padding:.65rem 1rem;background:#f0f6ff;border-radius:var(--rs);border:1px solid var(--ki-border)">
     <span style="font-size:12px;font-weight:700;color:var(--blt)">주차 선택</span>
     <select id="pgg-week-sel" onchange="onSecWeekChange('pgg',this.value)" style="font-size:13px;font-weight:600;padding:4px 12px;border:1px solid var(--ki-border);border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none"></select>
@@ -377,35 +368,56 @@ function _renderDailyTable(tbodyId, rows, hasRank){
   }).join('');
 }
 
-function _renderSumTable(tbodyId, wkData){
+// ── SA 합산 ──
+function _naverSaTotal(wk){
+  const n=wk.npc||{}, m=wk.nmo||{};
+  const imp=(n.imp||0)+(m.imp||0), clk=(n.clk||0)+(m.clk||0);
+  const spend=(n.spend||0)+(m.spend||0), conv=Math.round(((n.conv||0)+(m.conv||0))*10)/10;
+  return {imp,clk,spend,conv,
+    cpc:clk>0?Math.round(spend/clk):0,
+    ctr:imp>0?Math.round(clk/imp*1000)/10:0,
+    cvr:clk>0?Math.round(conv/clk*1000)/10:0,
+    cpa:conv>0?Math.round(spend/conv):0};
+}
+function _googleSaTotal(wk){
+  const b=wk.gb||{}, c=wk.gc||{}, g=wk.gg||{};
+  const imp=(b.imp||0)+(c.imp||0)+(g.imp||0), clk=(b.clk||0)+(c.clk||0)+(g.clk||0);
+  const spend=(b.spend||0)+(c.spend||0)+(g.spend||0), conv=Math.round(((b.conv||0)+(c.conv||0)+(g.conv||0))*10)/10;
+  return {imp,clk,spend,conv,
+    cpc:clk>0?Math.round(spend/clk):0,
+    ctr:imp>0?Math.round(clk/imp*1000)/10:0,
+    cvr:clk>0?Math.round(conv/clk*1000)/10:0,
+    cpa:conv>0?Math.round(spend/conv):0};
+}
+
+// ── 이번주 vs 전주 비교 표 ──
+function _renderCmpTable(tbodyId, curr, prev){
   const tb=document.getElementById(tbodyId);
   if(!tb) return;
-  const npcRows=wkData.daily_rows?.npc||[];
-  const nmoRows=wkData.daily_rows?.nmo||[];
-  const gbRows=wkData.daily_rows?.gb||[];
-  const gcRows=wkData.daily_rows?.gc||[];
-  const ggRows=wkData.daily_rows?.gg||[];
-  const dates=wkData.dates||[];
-  tb.innerHTML=dates.map((d,i)=>{
-    const np=npcRows[i]||{}; const nm=nmoRows[i]||{};
-    const gb=gbRows[i]||{}; const gc=gcRows[i]||{}; const gg=ggRows[i]||{};
-    const nSp=(np.spend||0)+(nm.spend||0);
-    const nCv=Math.round(((np.conv||0)+(nm.conv||0))*10)/10;
-    const nCpa=nCv>0?Math.round(nSp/nCv):0;
-    const gSp=(gb.spend||0)+(gc.spend||0)+(gg.spend||0);
-    const gCv=Math.round(((gb.conv||0)+(gc.conv||0)+(gg.conv||0))*10)/10;
-    const gCpa=gCv>0?Math.round(gSp/gCv):0;
-    const nCpaCls=nCpa>0&&nCpa<=TARGET_CPA?' class="cpa-ok"':nCpa>TARGET_CPA*1.5?' class="cpa-hi"':'';
-    const gCpaCls=gCpa>0&&gCpa<=TARGET_CPA?' class="cpa-ok"':gCpa>TARGET_CPA*1.5?' class="cpa-hi"':'';
-    const day=np.day||nm.day||'';
+  const metrics=[
+    {label:'노출',   key:'imp',   fmt:v=>v.toLocaleString(),    rev:false},
+    {label:'클릭',   key:'clk',   fmt:v=>v.toLocaleString(),    rev:false},
+    {label:'광고비', key:'spend', fmt:v=>_fmtSpend(v),          rev:false},
+    {label:'CPC',   key:'cpc',   fmt:v=>v.toLocaleString()+'원', rev:true},
+    {label:'CTR',   key:'ctr',   fmt:v=>v+'%',                  rev:false},
+    {label:'전환',   key:'conv',  fmt:v=>v+'건',                 rev:false},
+    {label:'CVR',   key:'cvr',   fmt:v=>v+'%',                  rev:false},
+    {label:'CPA',   key:'cpa',   fmt:v=>v.toLocaleString()+'원', rev:true},
+  ];
+  tb.innerHTML=metrics.map(m=>{
+    const cv=curr[m.key]||0, pv=prev?(prev[m.key]||0):null;
+    let pctHtml='—';
+    if(pv!==null&&pv>0){
+      const pct=Math.round((cv-pv)/pv*100), sign=pct>=0?'+':'';
+      const good=m.rev?pct<0:pct>0, bad=m.rev?pct>0:pct<0;
+      const col=good?'color:var(--gn)':bad?'color:var(--rd)':'color:var(--tx3)';
+      pctHtml=`<span style="${col};font-weight:700">${sign}${pct}%</span>`;
+    }
     return `<tr>
-      <td>${d}</td><td>${day}</td>
-      <td>${nSp?_fmtSpend(nSp):'—'}</td>
-      <td>${nCv}건</td>
-      <td${nCpaCls}>${nCpa?nCpa.toLocaleString()+'원':'—'}</td>
-      <td>${gSp?_fmtSpend(gSp):'—'}</td>
-      <td>${gCv}건</td>
-      <td${gCpaCls}>${gCpa?gCpa.toLocaleString()+'원':'—'}</td>
+      <td style="text-align:left;font-weight:600;color:var(--tx2)">${m.label}</td>
+      <td style="font-weight:700">${m.fmt(cv)}</td>
+      <td style="color:var(--tx3)">${pv!==null?m.fmt(pv):'—'}</td>
+      <td>${pctHtml}</td>
     </tr>`;
   }).join('');
 }
@@ -518,8 +530,9 @@ function onWeekChange(weekLabel){
   // Summary KPI
   _renderSummaryKpi(curr, prev);
 
-  // Summary table
-  _renderSumTable('sum-tbl', curr);
+  // 이번주 vs 전주 비교 표
+  _renderCmpTable('sum-n-cmp-tbl', _naverSaTotal(curr), prev?_naverSaTotal(prev):null);
+  _renderCmpTable('sum-g-cmp-tbl', _googleSaTotal(curr), prev?_googleSaTotal(prev):null);
 
   // Summary comment
   const cmt=allWeeklyComments[weekLabel];
@@ -581,7 +594,8 @@ function onSecWeekChange(pageId, weekLabel){
   });
   // Summary도 업데이트
   _renderSummaryKpi(curr, prev);
-  _renderSumTable('sum-tbl', curr);
+  _renderCmpTable('sum-n-cmp-tbl', _naverSaTotal(curr), prev?_naverSaTotal(prev):null);
+  _renderCmpTable('sum-g-cmp-tbl', _googleSaTotal(curr), prev?_googleSaTotal(prev):null);
   const titleEl=document.getElementById('sum-title');
   if(titleEl){
     const cmp=prev?` — 전주(${prev.range}) 대비`:'';
