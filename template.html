@@ -73,6 +73,7 @@ body{font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo','Malgun Gothic
 
 /* KPI CARDS */
 .kg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.2rem}
+.kg5{grid-template-columns:repeat(5,1fr)}
 .ki{background:var(--ki-bg);border:1px solid var(--ki-border);border-radius:var(--rs);padding:.8rem 1rem}
 .kl{font-size:11px;color:var(--tx2);margin-bottom:.25rem;font-weight:500}
 .kv{font-size:21px;font-weight:800;color:var(--tx)}
@@ -186,11 +187,13 @@ tr.twknd:hover td{background:rgba(254,243,199,0.7)}
   </div>
   <div class="kg">
     <div class="ki"><div class="kl">네이버 SA 광고비</div><div class="kv" id="kpi-n-spend">{{N_SPEND}}</div><div class="ks {{N_SPEND_CLS}}" id="kpi-n-spend-badge">{{N_SPEND_DIFF}}</div></div>
-    <div class="ki"><div class="kl">네이버 SA CPA</div><div class="kv" id="kpi-n-cpa">{{N_CPA}}</div><div class="ks {{N_CPA_CLS}}" id="kpi-n-cpa-badge">{{N_CPA_DIFF}}</div></div>
     <div class="ki"><div class="kl">네이버 SA CPC</div><div class="kv" id="kpi-n-cpc">{{N_CPC}}</div><div class="ks {{N_CPC_CLS}}" id="kpi-n-cpc-badge">{{N_CPC_DIFF}}</div></div>
+    <div class="ki"><div class="kl">네이버 SA CPA</div><div class="kv" id="kpi-n-cpa">{{N_CPA}}</div><div class="ks {{N_CPA_CLS}}" id="kpi-n-cpa-badge">{{N_CPA_DIFF}}</div></div>
+    <div class="ki"><div class="kl">네이버 SA CVR</div><div class="kv" id="kpi-n-cvr">{{N_CVR}}</div><div class="ks {{N_CVR_CLS}}" id="kpi-n-cvr-badge">{{N_CVR_DIFF}}</div></div>
     <div class="ki"><div class="kl">구글 SA 광고비</div><div class="kv" id="kpi-g-spend">{{G_SPEND}}</div><div class="ks {{G_SPEND_CLS}}" id="kpi-g-spend-badge">{{G_SPEND_DIFF}}</div></div>
-    <div class="ki"><div class="kl">구글 SA CPA</div><div class="kv" id="kpi-g-cpa">{{G_CPA}}</div><div class="ks {{G_CPA_CLS}}" id="kpi-g-cpa-badge">{{G_CPA_DIFF}}</div></div>
     <div class="ki"><div class="kl">구글 SA CPC</div><div class="kv" id="kpi-g-cpc">{{G_CPC}}</div><div class="ks {{G_CPC_CLS}}" id="kpi-g-cpc-badge">{{G_CPC_DIFF}}</div></div>
+    <div class="ki"><div class="kl">구글 SA CPA</div><div class="kv" id="kpi-g-cpa">{{G_CPA}}</div><div class="ks {{G_CPA_CLS}}" id="kpi-g-cpa-badge">{{G_CPA_DIFF}}</div></div>
+    <div class="ki"><div class="kl">구글 SA CVR</div><div class="kv" id="kpi-g-cvr">{{G_CVR}}</div><div class="ks {{G_CVR_CLS}}" id="kpi-g-cvr-badge">{{G_CVR_DIFF}}</div></div>
   </div>
   <div class="cg">
     <div class="cb">
@@ -283,7 +286,7 @@ tr.twknd:hover td{background:rgba(254,243,199,0.7)}
     <span style="font-size:12px;color:var(--tx2)">선택일 vs 전일 KPI 비교</span>
     <span style="font-size:11px;color:var(--tx3)">· 주말은 금·토·일 vs 전주 금·토·일 KPI 비교</span>
   </div>
-  <div class="kg" id="ppc-kg"></div>
+  <div class="kg kg5" id="ppc-kg"></div>
   <div class="sec">일자별 성과 (최근 7일)</div>
   <div class="tw"><table>
     <thead><tr><th>일자</th><th class="r">노출</th><th class="r">클릭</th><th class="r">광고비</th><th class="r">CTR</th><th class="r">CPC</th><th class="r">전환</th><th class="r">CVR</th><th class="r">CPA</th><th class="r">노출순위</th></tr></thead>
@@ -313,7 +316,7 @@ tr.twknd:hover td{background:rgba(254,243,199,0.7)}
     <span style="font-size:12px;color:var(--tx2)">선택일 vs 전일 KPI 비교</span>
     <span style="font-size:11px;color:var(--tx3)">· 주말은 금·토·일 vs 전주 금·토·일 KPI 비교</span>
   </div>
-  <div class="kg" id="pmo-kg"></div>
+  <div class="kg kg5" id="pmo-kg"></div>
   <div class="sec">일자별 성과 (최근 7일)</div>
   <div class="tw"><table>
     <thead><tr><th>일자</th><th class="r">노출</th><th class="r">클릭</th><th class="r">광고비</th><th class="r">CTR</th><th class="r">CPC</th><th class="r">전환</th><th class="r">CVR</th><th class="r">CPA</th><th class="r">노출순위</th></tr></thead>
@@ -343,7 +346,7 @@ tr.twknd:hover td{background:rgba(254,243,199,0.7)}
     <span style="font-size:12px;color:var(--tx2)">선택일 vs 전일 KPI 비교</span>
     <span style="font-size:11px;color:var(--tx3)">· 주말은 금·토·일 vs 전주 금·토·일 KPI 비교</span>
   </div>
-  <div class="kg" id="pgb-kg"></div>
+  <div class="kg kg5" id="pgb-kg"></div>
   <div class="sec">일자별 성과 (최근 7일)</div>
   <div class="tw"><table>
     <thead><tr><th>일자</th><th class="r">노출</th><th class="r">클릭</th><th class="r">광고비</th><th class="r">CTR</th><th class="r">CPC</th><th class="r">전환</th><th class="r">CVR</th><th class="r">CPA</th></tr></thead>
@@ -368,7 +371,7 @@ tr.twknd:hover td{background:rgba(254,243,199,0.7)}
     <span style="font-size:12px;color:var(--tx2)">선택일 vs 전일 KPI 비교</span>
     <span style="font-size:11px;color:var(--tx3)">· 주말은 금·토·일 vs 전주 금·토·일 KPI 비교</span>
   </div>
-  <div class="kg" id="pgc-kg"></div>
+  <div class="kg kg5" id="pgc-kg"></div>
   <div class="sec">일자별 성과 (최근 7일)</div>
   <div class="tw"><table>
     <thead><tr><th>일자</th><th class="r">노출</th><th class="r">클릭</th><th class="r">광고비</th><th class="r">CTR</th><th class="r">CPC</th><th class="r">전환</th><th class="r">CVR</th><th class="r">CPA</th></tr></thead>
@@ -393,7 +396,7 @@ tr.twknd:hover td{background:rgba(254,243,199,0.7)}
     <span style="font-size:12px;color:var(--tx2)">선택일 vs 전일 KPI 비교</span>
     <span style="font-size:11px;color:var(--tx3)">· 주말은 금·토·일 vs 전주 금·토·일 KPI 비교</span>
   </div>
-  <div class="kg" id="pgg-kg"></div>
+  <div class="kg kg5" id="pgg-kg"></div>
   <div class="sec">일자별 성과 (최근 7일)</div>
   <div class="tw"><table>
     <thead><tr><th>일자</th><th class="r">노출</th><th class="r">클릭</th><th class="r">광고비</th><th class="r">CTR</th><th class="r">CPC</th><th class="r">전환</th><th class="r">CVR</th><th class="r">CPA</th></tr></thead>
@@ -786,34 +789,47 @@ function onDateChange(selectedDate){
     const nCpa=nConv>0?Math.round(nSpend/nConv):0;
     const nClk=nAgg.clk+nAggMo.clk;
     const nCpc=nClk>0?Math.round(nSpend/nClk):0;
+    const nCvr=nClk>0?(nConv/nClk*100).toFixed(2):0;
     const gAgg=_aggKpi(wkDates,"g");
     document.getElementById("kpi-n-spend").textContent=_fmtSpend(nSpend);
-    document.getElementById("kpi-n-cpa").textContent=nCpa.toLocaleString()+"원";
     document.getElementById("kpi-n-cpc").textContent=nCpc.toLocaleString()+"원";
+    document.getElementById("kpi-n-cpa").textContent=nCpa.toLocaleString()+"원";
+    document.getElementById("kpi-n-cvr").textContent=nCvr+"%";
     document.getElementById("kpi-g-spend").textContent=_fmtSpend(gAgg.spend);
-    document.getElementById("kpi-g-cpa").textContent=gAgg.cpa.toLocaleString()+"원";
     document.getElementById("kpi-g-cpc").textContent=gAgg.cpc.toLocaleString()+"원";
-    [["kpi-n-spend-badge","주말 합산","kn"],["kpi-n-cpa-badge","주말 합산","kn"],
-     ["kpi-n-cpc-badge","주말 합산","kn"],
-     ["kpi-g-spend-badge","주말 합산","kn"],["kpi-g-cpa-badge","주말 합산","kn"],
-     ["kpi-g-cpc-badge","주말 합산","kn"]
+    document.getElementById("kpi-g-cpa").textContent=gAgg.cpa.toLocaleString()+"원";
+    document.getElementById("kpi-g-cvr").textContent=gAgg.cvr+"%";
+    [["kpi-n-spend-badge","주말 합산","kn"],["kpi-n-cpc-badge","주말 합산","kn"],
+     ["kpi-n-cpa-badge","주말 합산","kn"],["kpi-n-cvr-badge","주말 합산","kn"],
+     ["kpi-g-spend-badge","주말 합산","kn"],["kpi-g-cpc-badge","주말 합산","kn"],
+     ["kpi-g-cpa-badge","주말 합산","kn"],["kpi-g-cvr-badge","주말 합산","kn"]
     ].forEach(([id,txt,cls])=>{
       const el=document.getElementById(id);
       el.textContent=txt; el.className="ks "+cls;
     });
   } else {
+    const nCvrClk=(curr.npc.clk||0)+(curr.nmo.clk||0);
+    const nCvrConv=(curr.npc.conv||0)+(curr.nmo.conv||0);
+    const nCvr=nCvrClk>0?(nCvrConv/nCvrClk*100).toFixed(2):0;
+    const prevNCvrClk=((prev&&prev.npc&&prev.npc.clk)||0)+((prev&&prev.nmo&&prev.nmo.clk)||0);
+    const prevNCvrConv=((prev&&prev.npc&&prev.npc.conv)||0)+((prev&&prev.nmo&&prev.nmo.conv)||0);
+    const prevNCvr=prevNCvrClk>0?(prevNCvrConv/prevNCvrClk*100).toFixed(2):0;
     document.getElementById("kpi-n-spend").textContent = _fmtSpend(curr.n_spend);
-    document.getElementById("kpi-n-cpa").textContent   = curr.n_cpa.toLocaleString()+"원";
     document.getElementById("kpi-n-cpc").textContent   = (curr.n_cpc||0).toLocaleString()+"원";
+    document.getElementById("kpi-n-cpa").textContent   = curr.n_cpa.toLocaleString()+"원";
+    document.getElementById("kpi-n-cvr").textContent   = nCvr+"%";
     document.getElementById("kpi-g-spend").textContent = _fmtSpend(curr.g_spend);
-    document.getElementById("kpi-g-cpa").textContent   = curr.g_cpa.toLocaleString()+"원";
     document.getElementById("kpi-g-cpc").textContent   = (curr.g_cpc||0).toLocaleString()+"원";
+    document.getElementById("kpi-g-cpa").textContent   = curr.g_cpa.toLocaleString()+"원";
+    document.getElementById("kpi-g-cvr").textContent   = (curr.g_cvr||0)+"%";
     [["kpi-n-spend-badge",_diffBadge(curr.n_spend,prev&&prev.n_spend,false)],
-     ["kpi-n-cpa-badge",  _diffBadge(curr.n_cpa,  prev&&prev.n_cpa,  true)],
      ["kpi-n-cpc-badge",  _diffBadge(curr.n_cpc,  prev&&prev.n_cpc,  true)],
+     ["kpi-n-cpa-badge",  _diffBadge(curr.n_cpa,  prev&&prev.n_cpa,  true)],
+     ["kpi-n-cvr-badge",  _cvrBadge(Number(nCvr),  Number(prevNCvr))],
      ["kpi-g-spend-badge",_diffBadge(curr.g_spend,prev&&prev.g_spend,false)],
-     ["kpi-g-cpa-badge",  _diffBadge(curr.g_cpa,  prev&&prev.g_cpa,  true)],
      ["kpi-g-cpc-badge",  _diffBadge(curr.g_cpc,  prev&&prev.g_cpc,  true)],
+     ["kpi-g-cpa-badge",  _diffBadge(curr.g_cpa,  prev&&prev.g_cpa,  true)],
+     ["kpi-g-cvr-badge",  _cvrBadge(curr.g_cvr||0, prev&&prev.g_cvr||0)],
     ].forEach(([id,b])=>{
       const el=document.getElementById(id);
       el.textContent=b.text; el.className="ks "+b.cls;

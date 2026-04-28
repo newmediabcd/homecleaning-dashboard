@@ -212,10 +212,12 @@ def build_all_daily_kpi_json(naver_df, naver_pc_df, naver_mo_df, google_df, goog
             "n_conv":  float(round(float(n["conv"]), 1)),
             "n_cpa":   int(n["cpa"]),
             "n_cpc":   int(n["cpc"]),
+            "n_cvr":   float(n["cvr"]),
             "g_spend": int(g["spend"]),
             "g_conv":  float(round(float(g["conv"]), 1)),
             "g_cpa":   int(g["cpa"]),
             "g_cpc":   int(g["cpc"]),
+            "g_cvr":   float(g["cvr"]),
             "npc": _row(npc_sub, True),
             "nmo": _row(nmo_sub, True),
             "g":   _row(g_sub,   False),
@@ -1447,9 +1449,13 @@ def main():
     n_spend_txt, n_spend_cls = diff_badge(n_curr["spend"], n_prev["spend"], prev_label=prev_label)
     n_cpa_txt,   n_cpa_cls   = diff_badge(n_curr["cpa"],   n_prev["cpa"],   reverse=True, prev_label=prev_label)
     n_cpc_txt,   n_cpc_cls   = diff_badge(n_curr["cpc"],   n_prev["cpc"],   reverse=True, prev_label=prev_label)
+    n_cvr_txt = (f"{prev_label} {n_prev['cvr']}% 대비 {'상승' if n_curr['cvr']>n_prev['cvr'] else '하락'}" if n_prev["cvr"]>0 else f"{prev_label} 대비 —")
+    n_cvr_cls = ("ku" if n_curr["cvr"]>n_prev["cvr"] else "kd") if n_prev["cvr"]>0 else "kn"
     g_spend_txt, g_spend_cls = diff_badge(g_curr["spend"], g_prev["spend"], prev_label=prev_label)
     g_cpa_txt,   g_cpa_cls   = diff_badge(g_curr["cpa"],   g_prev["cpa"],   reverse=True, prev_label=prev_label)
     g_cpc_txt,   g_cpc_cls   = diff_badge(g_curr["cpc"],   g_prev["cpc"],   reverse=True, prev_label=prev_label)
+    g_cvr_txt = (f"{prev_label} {g_prev['cvr']}% 대비 {'상승' if g_curr['cvr']>g_prev['cvr'] else '하락'}" if g_prev["cvr"]>0 else f"{prev_label} 대비 —")
+    g_cvr_cls = ("ku" if g_curr["cvr"]>g_prev["cvr"] else "kd") if g_prev["cvr"]>0 else "kn"
 
     print(f"  네이버 CPA: {int(n_curr['cpa']):,}원  /  구글 CPA: {int(g_curr['cpa']):,}원")
 
@@ -1551,6 +1557,12 @@ def main():
         "G_CPC":        f"{int(g_curr['cpc']):,}원",
         "G_CPC_DIFF":   g_cpc_txt,
         "G_CPC_CLS":    g_cpc_cls,
+        "N_CVR":        f"{n_curr['cvr']}%",
+        "N_CVR_DIFF":   n_cvr_txt,
+        "N_CVR_CLS":    n_cvr_cls,
+        "G_CVR":        f"{g_curr['cvr']}%",
+        "G_CVR_DIFF":   g_cvr_txt,
+        "G_CVR_CLS":    g_cvr_cls,
 
         # JS 날짜/색상 배열
         "JS_L7":    js_l7,
