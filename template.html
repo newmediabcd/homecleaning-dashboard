@@ -668,6 +668,19 @@ function _prevWeekendDates(mmdd){
   const fmt = x=>{const mm=String(x.getMonth()+1).padStart(2,"0");const dd=String(x.getDate()).padStart(2,"0");return mm+"/"+dd;};
   return [0,1,2].map(i=>fmt(new Date(fri.getTime()+(i-7)*86400000))).filter(s=>allDailyKpi[s]);
 }
+function _isMonday(mmdd){
+  const [m,d]=mmdd.split("/").map(Number);
+  return new Date(DATA_YEAR,m-1,d).getDay()===1;
+}
+function _prevMondayDate(mmdd){
+  const [m,d]=mmdd.split("/").map(Number);
+  const dt=new Date(DATA_YEAR,m-1,d);
+  const prev=new Date(dt.getTime()-7*86400000);
+  const mm=String(prev.getMonth()+1).padStart(2,"0");
+  const dd=String(prev.getDate()).padStart(2,"0");
+  const s=mm+"/"+dd;
+  return allDailyKpi[s]?s:null;
+}
 // 여러 날짜의 KPI 합산
 function _aggKpi(dates, dataKey){
   let spend=0,conv=0,imp=0,clk=0;
@@ -772,10 +785,11 @@ function _renderSummaryTables(currDate, wkDates){
 
 function onDateChange(selectedDate){
   const idx = PL.indexOf(selectedDate);
-  const prevDate = idx>0?PL[idx-1]:null;
+  const wknd = _isWeekend(selectedDate);
+  const isMon = !wknd && _isMonday(selectedDate);
+  const prevDate = isMon ? _prevMondayDate(selectedDate) : (idx>0?PL[idx-1]:null);
   const curr = allDailyKpi[selectedDate];
   const prev = prevDate?allDailyKpi[prevDate]:null;
-  const wknd = _isWeekend(selectedDate);
   const wkDates = wknd ? _weekendDates(selectedDate) : null;
 
   // 주말 배너 표시/숨김
@@ -788,7 +802,7 @@ function onDateChange(selectedDate){
     if(modeLabel) modeLabel.textContent = "주말 금·토·일 3일 합산 KPI";
   } else {
     banner.style.display="none";
-    if(modeLabel) modeLabel.textContent = "선택일 vs 전일 KPI 비교";
+    if(modeLabel) modeLabel.textContent = isMon ? "선택일(월) vs 전주 월요일 KPI 비교" : "선택일 vs 전일 KPI 비교";
   }
 
   // KPI 카드
@@ -849,14 +863,15 @@ function onDateChange(selectedDate){
     document.getElementById("kpi-g-cpc").textContent   = (curr.g_cpc||0).toLocaleString()+"원";
     document.getElementById("kpi-g-cpa").textContent   = curr.g_cpa.toLocaleString()+"원";
     document.getElementById("kpi-g-cvr").textContent   = (curr.g_cvr||0)+"%";
-    [["kpi-n-spend-badge",_diffBadge(curr.n_spend,prev&&prev.n_spend,false)],
-     ["kpi-n-cpc-badge",  _diffBadge(curr.n_cpc,  prev&&prev.n_cpc,  true)],
-     ["kpi-n-cpa-badge",  _diffBadge(curr.n_cpa,  prev&&prev.n_cpa,  true)],
-     ["kpi-n-cvr-badge",  _cvrBadge(Number(nCvr),  Number(prevNCvr))],
-     ["kpi-g-spend-badge",_diffBadge(curr.g_spend,prev&&prev.g_spend,false)],
-     ["kpi-g-cpc-badge",  _diffBadge(curr.g_cpc,  prev&&prev.g_cpc,  true)],
-     ["kpi-g-cpa-badge",  _diffBadge(curr.g_cpa,  prev&&prev.g_cpa,  true)],
-     ["kpi-g-cvr-badge",  _cvrBadge(curr.g_cvr||0, prev&&prev.g_cvr||0)],
+    const bdgLbl = isMon ? "전주 월요일" : undefined;
+    [["kpi-n-spend-badge",_diffBadge(curr.n_spend,prev&&prev.n_spend,false,bdgLbl)],
+     ["kpi-n-cpc-badge",  _diffBadge(curr.n_cpc,  prev&&prev.n_cpc,  true, bdgLbl)],
+     ["kpi-n-cpa-badge",  _diffBadge(curr.n_cpa,  prev&&prev.n_cpa,  true, bdgLbl)],
+     ["kpi-n-cvr-badge",  _cvrBadge(Number(nCvr),  Number(prevNCvr), bdgLbl)],
+     ["kpi-g-spend-badge",_diffBadge(curr.g_spend,prev&&prev.g_spend,false,bdgLbl)],
+     ["kpi-g-cpc-badge",  _diffBadge(curr.g_cpc,  prev&&prev.g_cpc,  true, bdgLbl)],
+     ["kpi-g-cpa-badge",  _diffBadge(curr.g_cpa,  prev&&prev.g_cpa,  true, bdgLbl)],
+     ["kpi-g-cvr-badge",  _cvrBadge(curr.g_cvr||0, prev&&prev.g_cvr||0, bdgLbl)],
     ].forEach(([id,b])=>{
       const el=document.getElementById(id);
       el.textContent=b.text; el.className="ks "+b.cls;
@@ -868,6 +883,8 @@ function onDateChange(selectedDate){
   if(title){
     if(wknd && wkDates && wkDates.length>1){
       title.textContent=`주말 합산 (${wkDates[0]}~${wkDates[wkDates.length-1]}) 요약 — 3일 합산 데이터`;
+    } else if(isMon && prevDate){
+      title.textContent=`${DATA_YEAR}/${selectedDate} (${_dayName(selectedDate)}) 요약 — 전주 월요일(${prevDate} ${_dayName(prevDate)}) 대비`;
     } else if(prevDate){
       title.textContent=`${DATA_YEAR}/${selectedDate} (${_dayName(selectedDate)}) 요약 — 전일(${prevDate} ${_dayName(prevDate)}) 대비`;
     }
@@ -880,11 +897,11 @@ function onDateChange(selectedDate){
 
   // 서브페이지 업데이트
   const prevWkDates = wknd ? _prevWeekendDates(selectedDate) : null;
-  _updateSubPage("ppc","npc","npc_kw","네이버 SA · PC",  true, true,  selectedDate, prevDate, wkDates, prevWkDates);
-  _updateSubPage("pmo","nmo","nmo_kw","네이버 SA · MO",  true, true,  selectedDate, prevDate, wkDates, prevWkDates);
-  _updateSubPage("pgb","gb", "gb_kw", "구글 SA · 브랜드",false,false, selectedDate, prevDate, wkDates, prevWkDates);
-  _updateSubPage("pgc","gc", "gc_kw", "구글 SA · 경쟁사",false,false, selectedDate, prevDate, wkDates, prevWkDates);
-  _updateSubPage("pgg","gg", "gg_kw", "구글 SA · 일반",  false,false, selectedDate, prevDate, wkDates, prevWkDates);
+  _updateSubPage("ppc","npc","npc_kw","네이버 SA · PC",  true, true,  selectedDate, prevDate, wkDates, prevWkDates, isMon);
+  _updateSubPage("pmo","nmo","nmo_kw","네이버 SA · MO",  true, true,  selectedDate, prevDate, wkDates, prevWkDates, isMon);
+  _updateSubPage("pgb","gb", "gb_kw", "구글 SA · 브랜드",false,false, selectedDate, prevDate, wkDates, prevWkDates, isMon);
+  _updateSubPage("pgc","gc", "gc_kw", "구글 SA · 경쟁사",false,false, selectedDate, prevDate, wkDates, prevWkDates, isMon);
+  _updateSubPage("pgg","gg", "gg_kw", "구글 SA · 일반",  false,false, selectedDate, prevDate, wkDates, prevWkDates, isMon);
 
   // 코멘트 업데이트 (주말이면 가장 이른 금요일 날짜 코멘트를 우선 표시)
   const cmtDate = (wknd && wkDates && wkDates.length>1) ? wkDates[0] : selectedDate;
@@ -971,7 +988,7 @@ function _renderKpiGrid(gridId, cards){
 }
 
 // ── 서브페이지 KPI 카드 데이터 생성 ──
-function _pageCards(currDate, prevDate, key, wkDates, prevWkDates){
+function _pageCards(currDate, prevDate, key, wkDates, prevWkDates, badgeLabel){
   if(wkDates && wkDates.length>1){
     const agg = _aggKpi(wkDates, key);
     const wkLabel = `${wkDates[0]}~${wkDates[wkDates.length-1]} 합산`;
@@ -1003,11 +1020,12 @@ function _pageCards(currDate, prevDate, key, wkDates, prevWkDates){
   const curr = allDailyKpi[currDate]&&allDailyKpi[currDate][key];
   const prev = prevDate&&allDailyKpi[prevDate]?allDailyKpi[prevDate][key]:null;
   if(!curr) return [];
-  const spendB = _diffBadge(curr.spend, prev&&prev.spend, false);
-  const cpcB   = _diffBadge(curr.cpc, prev&&prev.cpc, true);
-  const convB  = _convBadge(curr.conv, prev&&prev.conv);
-  const cpaB   = _diffBadge(curr.cpa, prev&&prev.cpa, true);
-  const cvrB   = _cvrBadge(curr.cvr, prev&&prev.cvr);
+  const lbl = badgeLabel || undefined;
+  const spendB = _diffBadge(curr.spend, prev&&prev.spend, false, lbl);
+  const cpcB   = _diffBadge(curr.cpc, prev&&prev.cpc, true, lbl);
+  const convB  = _convBadge(curr.conv, prev&&prev.conv, lbl);
+  const cpaB   = _diffBadge(curr.cpa, prev&&prev.cpa, true, lbl);
+  const cvrB   = _cvrBadge(curr.cvr, prev&&prev.cvr, lbl);
   return [
     {label:`${currDate} 광고비`, value:`${curr.spend.toLocaleString()}원`, ...spendB},
     {label:`${currDate} CPC`,    value:`${curr.cpc?curr.cpc.toLocaleString():'—'}원`,  ...cpcB},
@@ -1018,17 +1036,20 @@ function _pageCards(currDate, prevDate, key, wkDates, prevWkDates){
 }
 
 // ── 서브페이지 통합 업데이트 ──
-function _updateSubPage(pageId, dataKey, kwKey, pageLabel, hasRank, isNaver, currDate, prevDate, wkDates, prevWkDates){
+function _updateSubPage(pageId, dataKey, kwKey, pageLabel, hasRank, isNaver, currDate, prevDate, wkDates, prevWkDates, isMon){
   const idx = PL.indexOf(currDate);
   const win7 = PL.slice(Math.max(0, idx-6), idx+1);
   const t = document.getElementById(pageId+"-title");
   if(t){
     if(wkDates&&wkDates.length>1)
       t.textContent=`${pageLabel} — 주말 합산 (${wkDates[0]}~${wkDates[wkDates.length-1]})`;
+    else if(isMon)
+      t.textContent=`${pageLabel} — ${currDate} (${_dayName(currDate)}) 전주 월요일(${prevDate||"—"}${prevDate?" "+_dayName(prevDate):""}) 대비`;
     else
       t.textContent=`${pageLabel} — ${currDate} (${_dayName(currDate)}) 전일(${prevDate||"—"}${prevDate?" "+_dayName(prevDate):""}) 대비`;
   }
-  _renderKpiGrid(pageId+"-kg", _pageCards(currDate, prevDate, dataKey, wkDates, prevWkDates));
+  const bdgLbl = isMon ? "전주 월요일" : undefined;
+  _renderKpiGrid(pageId+"-kg", _pageCards(currDate, prevDate, dataKey, wkDates, prevWkDates, bdgLbl));
   _renderTableRows(pageId+"-tbl", win7, dataKey, hasRank, isNaver, currDate, wkDates);
   _renderKwTables(pageId, kwKey, isNaver, currDate, wkDates);
 }
@@ -1099,11 +1120,12 @@ function onSecDateChange(pageId, date){
   const cfg = _secCfg[pageId];
   if(!cfg) return;
   const idx = PL.indexOf(date);
-  const prev = idx > 0 ? PL[idx-1] : null;
   const wknd = _isWeekend(date);
+  const isMon = !wknd && _isMonday(date);
+  const prev = isMon ? _prevMondayDate(date) : (idx > 0 ? PL[idx-1] : null);
   const wkDates = wknd ? _weekendDates(date) : null;
   const prevWkDates = wknd ? _prevWeekendDates(date) : null;
-  _updateSubPage(pageId, cfg.key, cfg.kwKey, cfg.label, cfg.hasRank, cfg.isNaver, date, prev, wkDates, prevWkDates);
+  _updateSubPage(pageId, cfg.key, cfg.kwKey, cfg.label, cfg.hasRank, cfg.isNaver, date, prev, wkDates, prevWkDates, isMon);
   const cmtDate = (wkDates&&wkDates.length>1) ? wkDates[0] : date;
   const cmt = allComments[cmtDate] || allComments[date];
   if(cmt && cmt[cfg.cmtKey]){

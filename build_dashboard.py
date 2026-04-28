@@ -79,9 +79,18 @@ def get_date_meta(df: pd.DataFrame) -> dict:
     active = sorted(active)
 
     curr = max(active)
-    prev = active[-2] if len(active) >= 2 else curr
-
     all_dates = [d.strftime("%m/%d") for d in active]
+
+    is_monday = curr.weekday() == 0
+    if is_monday:
+        prev_monday = curr - pd.Timedelta(days=7)
+        prev_monday_str = prev_monday.strftime("%m/%d")
+        if prev_monday_str in all_dates:
+            prev = active[all_dates.index(prev_monday_str)]
+        else:
+            prev = active[-2] if len(active) >= 2 else curr
+    else:
+        prev = active[-2] if len(active) >= 2 else curr
 
     day_ko = ["월", "화", "수", "목", "금", "토", "일"]
 
@@ -92,6 +101,7 @@ def get_date_meta(df: pd.DataFrame) -> dict:
         "prev_str":    prev.strftime("%m/%d"),
         "curr_day":    day_ko[curr.weekday()],
         "prev_day":    day_ko[prev.weekday()],
+        "is_monday":   is_monday,
         "curr_label":  curr.strftime("%Y/%m/%d"),
         "data_start":  active[0].strftime("%m/%d"),
         "data_end":    curr.strftime("%m/%d"),
@@ -532,9 +542,10 @@ def build_comment_data(naver_pc, naver_mo, google_brand, google_comp, google_gen
                        naver_df, meta, all_dates):
     curr, prev = meta["curr_str"], meta["prev_str"]
 
-    # 주말 여부 및 날짜 범위 계산
+    # 주말/월요일 여부 및 날짜 범위 계산
     curr_dt = meta["curr"]
-    is_wknd = _is_weekend(curr_dt)
+    is_wknd   = _is_weekend(curr_dt)
+    is_monday = meta.get("is_monday", False)
     if is_wknd:
         curr_wk = _weekend_range(curr_dt, 0)   # 이번 주말 금~일
         prev_wk = _weekend_range(curr_dt, -1)  # 전주 주말 금~일
@@ -634,10 +645,35 @@ def build_comment_data(naver_pc, naver_mo, google_brand, google_comp, google_gen
             return {"curr": _agg_kpi(df, curr_wk), "prev": _agg_kpi(df, prev_wk), "kw": _agg_kw(df, curr_wk)}
         return {"curr": _kpi(df, curr), "prev": _kpi(df, prev), "kw": _kw_day(df, curr)}
 
+    # 월요일 자동입찰: 이번 월요일 vs 전주 월요일 (2개 row만 사용)
+    if is_monday and not is_wknd:
+        def _get_auto_row(dev, kw, date):
+            if date is None:
+                return {"date": "—", "spend": 0, "conv": 0, "cpa": 0, "cpc": 0, "rank": 0, "imp": 0}
+            sub = naver_df[
+                (naver_df["디바이스"] == dev) & (naver_df["키워드"] == kw) &
+                (naver_df["일자"].dt.strftime("%m/%d") == date)
+            ]
+            if len(sub) == 0:
+                return {"date": date, "spend": 0, "conv": 0, "cpa": 0, "cpc": 0, "rank": 0, "imp": 0}
+            sp = int(sub["광고비"].sum()); cv = float(sub["총전환"].sum())
+            cl = int(sub["클릭"].sum()); imp = int(sub["노출"].sum())
+            rank = round(float(sub["평균노출순위"].mean()), 1)
+            return {"date": date, "spend": sp, "conv": round(cv, 1), "imp": imp,
+                    "cpa": int(round(sp/cv)) if cv > 0 else 0,
+                    "cpc": int(round(sp/cl)) if cl > 0 else 0, "rank": rank}
+        auto_data = {
+            dev: {kw: {"rows": [_get_auto_row(dev, kw, prev), _get_auto_row(dev, kw, curr)],
+                        "is_new": False, "start": curr}
+                  for kw in AUTO_BID_KEYWORDS}
+            for dev in ["MO", "PC"]
+        }
+
     return {
         "curr": curr, "curr_day": meta["curr_day"],
         "prev": prev, "prev_day": meta["prev_day"],
         "is_weekend": is_wknd,
+        "is_monday": is_monday,
         "curr_wk": curr_wk,
         "prev_wk": prev_wk,
         "data_range": f"{meta['data_start']}~{meta['data_end']}",
@@ -651,10 +687,15 @@ def build_comment_data(naver_pc, naver_mo, google_brand, google_comp, google_gen
     }
 
 
-def generate_comments(cd: dict, is_weekend: bool = False) -> dict:
+def generate_comments(cd: dict, is_weekend: bool = False, is_monday: bool = False) -> dict:
     """규칙 기반 섹션별 코멘트 생성 (API 불필요)"""
 
-    cmp_label = "전주 주말" if is_weekend else "전일"
+    if is_weekend:
+        cmp_label = "전주 주말"
+    elif is_monday:
+        cmp_label = "전주 월요일"
+    else:
+        cmp_label = "전일"
 
     # ── 공통 헬퍼 ──
     def ko(v):
@@ -997,6 +1038,9 @@ def generate_comments(cd: dict, is_weekend: bool = False) -> dict:
         yesterday = rows[-1]
         day_before = rows[-2] if len(rows) >= 2 else None
 
+        curr_label_auto = "이번 월요일" if is_monday else "전일"
+        prev_label_auto = "전주 월요일" if is_monday else "전전일"
+
         def _row_str(r, label):
             conv = round(r["conv"], 1)
             cpa = r["cpa"]
@@ -1006,10 +1050,10 @@ def generate_comments(cd: dict, is_weekend: bool = False) -> dict:
             else:
                 return f"{label}({date}) 전환 0건"
 
-        y_str = _row_str(yesterday, "전일")
+        y_str = _row_str(yesterday, curr_label_auto)
 
         if day_before:
-            db_str = _row_str(day_before, "전전일")
+            db_str = _row_str(day_before, prev_label_auto)
             y_conv = round(yesterday["conv"], 1)
             db_conv = round(day_before["conv"], 1)
             y_cpa = yesterday["cpa"]
@@ -1157,7 +1201,16 @@ def build_all_comments_json(naver_pc, naver_mo, google_brand, google_comp, googl
             continue
 
         # ── 평일 모드 ──
-        prev = all_dates[i - 1] if i > 0 else curr
+        is_curr_monday = curr_dt is not None and curr_dt.weekday() == 0
+
+        if is_curr_monday:
+            # 전주 월요일 찾기
+            prev_monday_dt = curr_dt - pd.Timedelta(days=7)
+            prev_monday_str = prev_monday_dt.strftime("%m/%d")
+            prev = prev_monday_str if prev_monday_str in all_dates else (all_dates[i - 1] if i > 0 else curr)
+        else:
+            prev = all_dates[i - 1] if i > 0 else curr
+
         try:
             prev_dt = pd.Timestamp(f"{year}-{prev.replace('/', '-')}")
             prev_day = day_ko[prev_dt.weekday()]
@@ -1182,7 +1235,26 @@ def build_all_comments_json(naver_pc, naver_mo, google_brand, google_comp, googl
                 "dates": f"{_rwd[0]}~{_rwd[-1]}" if _rwd else "",
             }
 
-        def auto_kw_rows_for(dev, kw, _i=i):
+        def _get_auto_row_single(dev, kw, date_str):
+            if date_str is None:
+                return {"date": "—", "spend": 0, "conv": 0, "cpa": 0, "cpc": 0, "rank": 0, "imp": 0}
+            sub = naver_df[
+                (naver_df["디바이스"] == dev) & (naver_df["키워드"] == kw) &
+                (naver_df["일자"].dt.strftime("%m/%d") == date_str)
+            ]
+            if len(sub) == 0:
+                return {"date": date_str, "spend": 0, "conv": 0, "cpa": 0, "cpc": 0, "rank": 0, "imp": 0}
+            sp = int(sub["광고비"].sum()); cv = float(sub["총전환"].sum())
+            cl = int(sub["클릭"].sum()); imp = int(sub["노출"].sum())
+            rank = round(float(sub["평균노출순위"].mean()), 1)
+            return {
+                "date": date_str, "spend": sp, "conv": round(cv, 1), "imp": imp,
+                "cpa": int(round(sp / cv)) if cv > 0 else 0,
+                "cpc": int(round(sp / cl)) if cl > 0 else 0,
+                "rank": rank,
+            }
+
+        def auto_kw_rows_for(dev, kw, _i=i, _is_monday=is_curr_monday, _curr=curr, _prev=prev):
             first_spend = None
             for d in all_dates:
                 sub = naver_df[
@@ -1193,25 +1265,30 @@ def build_all_comments_json(naver_pc, naver_mo, google_brand, google_comp, googl
                     first_spend = d
                     break
             is_new = first_spend and first_spend > all_dates[0]
-            recent5 = all_dates[max(0, _i-4):_i+1]
-            rows = []
-            for d in recent5:
-                sub = naver_df[
-                    (naver_df["디바이스"] == dev) & (naver_df["키워드"] == kw) &
-                    (naver_df["일자"].dt.strftime("%m/%d") == d)
-                ]
-                if len(sub) == 0:
-                    rows.append({"date": d, "spend": 0, "conv": 0, "cpa": 0, "cpc": 0, "rank": 0, "imp": 0})
-                    continue
-                sp = int(sub["광고비"].sum()); cv = float(sub["총전환"].sum())
-                cl = int(sub["클릭"].sum()); imp = int(sub["노출"].sum())
-                rank = round(float(sub["평균노출순위"].mean()), 1)
-                rows.append({
-                    "date": d, "spend": sp, "conv": round(cv, 1), "imp": imp,
-                    "cpa": int(round(sp / cv)) if cv > 0 else 0,
-                    "cpc": int(round(sp / cl)) if cl > 0 else 0,
-                    "rank": rank,
-                })
+            if _is_monday:
+                prev_row = _get_auto_row_single(dev, kw, _prev)
+                curr_row = _get_auto_row_single(dev, kw, _curr)
+                rows = [r for r in [prev_row, curr_row] if r["spend"] > 0 or r["date"] != "—"]
+            else:
+                recent5 = all_dates[max(0, _i-4):_i+1]
+                rows = []
+                for d in recent5:
+                    sub = naver_df[
+                        (naver_df["디바이스"] == dev) & (naver_df["키워드"] == kw) &
+                        (naver_df["일자"].dt.strftime("%m/%d") == d)
+                    ]
+                    if len(sub) == 0:
+                        rows.append({"date": d, "spend": 0, "conv": 0, "cpa": 0, "cpc": 0, "rank": 0, "imp": 0})
+                        continue
+                    sp = int(sub["광고비"].sum()); cv = float(sub["총전환"].sum())
+                    cl = int(sub["클릭"].sum()); imp = int(sub["노출"].sum())
+                    rank = round(float(sub["평균노출순위"].mean()), 1)
+                    rows.append({
+                        "date": d, "spend": sp, "conv": round(cv, 1), "imp": imp,
+                        "cpa": int(round(sp / cv)) if cv > 0 else 0,
+                        "cpc": int(round(sp / cl)) if cl > 0 else 0,
+                        "rank": rank,
+                    })
             return {"rows": rows, "is_new": is_new, "start": first_spend}
 
         def sec_for(df, kw_df, _curr=curr, _prev=prev, _rwd=recent_wd):
@@ -1227,6 +1304,7 @@ def build_all_comments_json(naver_pc, naver_mo, google_brand, google_comp, googl
             "curr": curr, "curr_day": curr_day,
             "prev": prev, "prev_day": prev_day,
             "is_weekend": False,
+            "is_monday": is_curr_monday,
             "data_range": f"{all_dates[0]}~{all_dates[-1]}",
             "n_pc":    sec_for(naver_pc, naver_pc),
             "n_mo":    sec_for(naver_mo, naver_mo),
@@ -1237,7 +1315,7 @@ def build_all_comments_json(naver_pc, naver_mo, google_brand, google_comp, googl
             "auto_weekend": None,
         }
 
-        result[curr] = generate_comments(cd, is_weekend=False)
+        result[curr] = generate_comments(cd, is_weekend=False, is_monday=is_curr_monday)
 
     return json.dumps(result, ensure_ascii=False)
 
@@ -1422,13 +1500,17 @@ def main():
     naver_pc = naver[naver["디바이스"] == "PC"]
     naver_mo = naver[naver["디바이스"] == "MO"]
 
-    # ── 주말 여부 판단 ──
+    # ── 주말/월요일 여부 판단 ──
     curr_dt_obj = meta["curr"]
     is_curr_weekend = _is_weekend(curr_dt_obj)
+    is_curr_monday  = meta.get("is_monday", False)
     if is_curr_weekend:
         curr_wk = _weekend_range(curr_dt_obj, 0)
         prev_wk = _weekend_range(curr_dt_obj, -1)
         prev_label = "전주 주말"
+    elif is_curr_monday:
+        curr_wk = prev_wk = []
+        prev_label = "전주 월요일"
     else:
         curr_wk = prev_wk = []
         prev_label = "전일"
@@ -1480,7 +1562,7 @@ def main():
         naver_pc, naver_mo, google_brand, google_comp, google_gen,
         naver, meta, all_dates
     )
-    comments = generate_comments(comment_data, is_weekend=comment_data.get("is_weekend", False))
+    comments = generate_comments(comment_data, is_weekend=comment_data.get("is_weekend", False), is_monday=comment_data.get("is_monday", False))
     all_comments_json = build_all_comments_json(
         naver_pc, naver_mo, google_brand, google_comp, google_gen,
         naver, meta, all_dates
@@ -1495,6 +1577,8 @@ def main():
         _fri, _sun = curr_wk[0], curr_wk[2]
         _pfri, _psun = prev_wk[0], prev_wk[2]
         title_auto = f"네이버 자동입찰 — 주말 합산 ({_fri}~{_sun}) / 전주 주말({_pfri}~{_psun}) 대비"
+    elif is_curr_monday:
+        title_auto = f"네이버 자동입찰 — {curr_str} ({meta['curr_day']}) 전주 월요일({prev_str}) 대비"
     else:
         title_auto = f"네이버 자동입찰 — {curr_str} ({meta['curr_day']}) 전전일 대비"
     if new_kws and not is_curr_weekend:
@@ -1535,6 +1619,8 @@ def main():
         "SUMMARY_TITLE":    (
             f"주말 합산 ({curr_wk[0]}~{curr_wk[2]}) 요약 — 전주 주말({prev_wk[0]}~{prev_wk[2]}) 대비"
             if is_curr_weekend else
+            f"{meta['curr_label']} ({meta['curr_day']}) 요약 — 전주 월요일({prev_str} {meta['prev_day']}) 대비"
+            if is_curr_monday else
             f"{meta['curr_label']} ({meta['curr_day']}) 요약 — 전일({prev_str} {meta['prev_day']}) 대비"
         ),
 
