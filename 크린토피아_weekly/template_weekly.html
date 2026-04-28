@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>크린토피아 홈클리닝 · Weekly</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<style>
+:root{
+  --blt:#1a56db;--tx:#1a202c;--tx2:#4a5568;--tx3:#718096;
+  --ki-bg:#f8faff;--ki-border:#dce8fb;--rs:10px;
+  --rd:#e53e3e;--gnt:#0a6e4c;--bk:#1e293b;
+  --nav-bg:#fff;--nav-border:#e2e8f0;
+  --wk-bg:#fff8e1;--wk-border:#f6d860;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',sans-serif;background:#f1f5f9;color:var(--tx);font-size:14px}
+/* topbar */
+.topbar{display:flex;justify-content:space-between;align-items:center;background:var(--bk);color:#fff;padding:.7rem 1.5rem;gap:1rem;flex-wrap:wrap}
+.t-title{font-size:15px;font-weight:700;color:#fff}
+.t-title span{color:#6ee7b7}
+.t-meta{font-size:11px;color:#94a3b8}
+.pill{background:rgba(255,255,255,.12);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;color:#cbd5e1;margin-left:8px}
+/* update indicator */
+.build-status{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#b06d10;background:#faebd4;border:1px solid #e8c87a;border-radius:20px;padding:4px 12px}
+.build-status.hidden{display:none}
+.build-spinner{width:10px;height:10px;border:2px solid #e8c87a;border-top-color:#b06d10;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* nav */
+.tabs{display:flex;gap:0;background:var(--nav-bg);border-bottom:2px solid var(--nav-border);overflow-x:auto;padding:0 1rem}
+.tab-btn{background:none;border:none;border-bottom:3px solid transparent;padding:.7rem 1.1rem;font-size:13px;font-weight:600;color:var(--tx2);cursor:pointer;white-space:nowrap;margin-bottom:-2px;transition:.15s}
+.tab-btn.active{color:var(--blt);border-bottom-color:var(--blt)}
+.tab-btn:hover:not(.active){color:var(--tx);border-bottom-color:#c0d0f0}
+/* pages */
+.pg{display:none;padding:1.4rem 1.5rem 3rem}
+.pg.active{display:block}
+/* week selector bar */
+.wk-bar{display:flex;align-items:center;gap:10px;margin-bottom:.9rem;padding:.65rem 1rem;background:#f0f6ff;border-radius:var(--rs);border:1px solid var(--ki-border)}
+.wk-bar select{font-size:13px;font-weight:600;padding:4px 12px;border:1px solid var(--ki-border);border-radius:20px;background:#fff;color:var(--tx);cursor:pointer;outline:none}
+.wk-bar-g{background:#e8f0fa;border-color:#b8d8f0}
+.wk-bar-g select{border-color:#b8d8f0}
+/* section title */
+.sec-title{font-size:16px;font-weight:700;color:var(--tx);margin-bottom:.8rem;padding-bottom:.4rem;border-bottom:2px solid var(--nav-border)}
+/* KPI grid */
+.kg{display:grid;grid-template-columns:repeat(4,1fr);gap:.65rem;margin-bottom:.8rem}
+.kg5{grid-template-columns:repeat(5,1fr)}
+.ki{background:var(--ki-bg);border:1px solid var(--ki-border);border-radius:var(--rs);padding:.7rem .9rem}
+.kl{font-size:11px;color:var(--tx3);font-weight:600;margin-bottom:2px}
+.kv{font-size:18px;font-weight:700;color:var(--tx)}
+.ks{font-size:11px;font-weight:600;margin-top:3px;border-radius:20px;padding:1px 6px;display:inline-block}
+.kn{color:var(--tx3);background:#f0f4f8}.ku{color:#0a6e4c;background:#e8f7f1}.kd{color:var(--rd);background:#fff0f0}
+.kg-label{font-size:12px;font-weight:700;color:var(--blt);margin-bottom:.35rem;padding-left:2px}
+/* comment box */
+.cb{background:#fff;border:1px solid var(--ki-border);border-radius:var(--rs);padding:1rem 1.2rem;margin:.8rem 0;font-size:13px;line-height:1.75}
+.cb h4{font-size:12px;font-weight:700;color:var(--blt);margin-bottom:.5rem;padding-bottom:.3rem;border-bottom:1px solid var(--ki-border)}
+.ins-i{font-size:13px;color:var(--tx);line-height:1.75}
+/* table */
+.tw{overflow-x:auto;margin:.5rem 0}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:600px}
+thead{background:var(--bk);color:#fff}
+thead th{padding:.5rem .6rem;text-align:center;font-weight:600;font-size:11px;white-space:nowrap}
+tbody tr:nth-child(even){background:#f8faff}
+tbody tr:hover{background:#eef2ff}
+td{padding:.45rem .6rem;border-bottom:1px solid #e2e8f0;text-align:center;white-space:nowrap}
+td.r{text-align:right}
+td.l{text-align:left}
+td.hl{background:#fff8c5;font-weight:700}   /* week highlight */
+.cpa-ok{color:var(--gnt);font-weight:700}
+.cpa-hi{color:var(--rd);font-weight:700}
+/* keyword table */
+.kw-section{margin-top:1rem}
+.kw-label{font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:.35rem}
+/* auto section */
+.auto-kw-block{margin-bottom:1.2rem}
+.auto-kw-title{font-size:13px;font-weight:700;color:var(--tx);margin-bottom:.4rem}
+/* badge */
+.bg{font-size:11px;font-weight:600;border-radius:20px;padding:1px 7px;display:inline-block}
+.bok{color:#0a6e4c;background:#e8f7f1}.bwa{color:#b06d10;background:#faebd4}.bdn{color:var(--rd);background:#fff0f0}
+@media(max-width:768px){.pg{padding:1rem 1rem 2rem}.kg{grid-template-columns:repeat(2,1fr)}.kg5{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<!-- ───── 상단 바 ───── -->
+<div class="topbar">
+  <div>
+    <span class="t-title">크린토피아 <span>홈클리닝</span> · Weekly</span>
+    <span class="pill">{{YEAR}}년 {{MONTH}}월</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span class="build-status" id="build-status"><span class="build-spinner"></span>데이터 업데이트 중</span>
+    <div class="t-meta">업데이트: {{UPDATE_DATE}}</div>
+  </div>
+</div>
+
+<!-- ───── 탭 네비게이션 ───── -->
+<nav class="tabs">
+  <button class="tab-btn active" onclick="showTab('sum',this)">Summary</button>
+  <button class="tab-btn" onclick="showTab('ppc',this)">네이버 PC</button>
+  <button class="tab-btn" onclick="showTab('pmo',this)">네이버 MO</button>
+  <button class="tab-btn" onclick="showTab('pau',this)">자동입찰</button>
+  <button class="tab-btn" onclick="showTab('pgb',this)">구글 브랜드</button>
+  <button class="tab-btn" onclick="showTab('pgc',this)">구글 경쟁사</button>
+  <button class="tab-btn" onclick="showTab('pgg',this)">구글 일반</button>
+</nav>
+
+<!-- ═══════════ Summary ═══════════ -->
+<div id="tab-sum" class="pg active">
+  <div class="wk-bar">
+    <span style="font-size:12px;font-weight:700;color:var(--blt)">주차 선택</span>
+    <select id="sum-week-sel" onchange="onWeekChange(this.value)"></select>
+    <span id="sum-range-label" style="font-size:12px;color:var(--tx2)"></span>
+  </div>
+
+  <div id="sum-title" class="sec-title"></div>
+
+  <div class="kg-label">네이버 SA</div>
+  <div class="kg" id="sum-kg-n">
+    <div class="ki"><div class="kl">네이버 광고비</div><div class="kv" id="kpi-n-spend">—</div><div class="ks kn" id="kpi-n-spend-bdg">—</div></div>
+    <div class="ki"><div class="kl">네이버 CPC</div><div class="kv" id="kpi-n-cpc">—</div><div class="ks kn" id="kpi-n-cpc-bdg">—</div></div>
+    <div class="ki"><div class="kl">네이버 CPA</div><div class="kv" id="kpi-n-cpa">—</div><div class="ks kn" id="kpi-n-cpa-bdg">—</div></div>
+    <div class="ki"><div class="kl">네이버 CVR</div><div class="kv" id="kpi-n-cvr">—</div><div class="ks kn" id="kpi-n-cvr-bdg">—</div></div>
+  </div>
+  <div class="kg-label">구글 SA</div>
+  <div class="kg" id="sum-kg-g">
+    <div class="ki"><div class="kl">구글 광고비</div><div class="kv" id="kpi-g-spend">—</div><div class="ks kn" id="kpi-g-spend-bdg">—</div></div>
+    <div class="ki"><div class="kl">구글 CPC</div><div class="kv" id="kpi-g-cpc">—</div><div class="ks kn" id="kpi-g-cpc-bdg">—</div></div>
+    <div class="ki"><div class="kl">구글 CPA</div><div class="kv" id="kpi-g-cpa">—</div><div class="ks kn" id="kpi-g-cpa-bdg">—</div></div>
+    <div class="ki"><div class="kl">구글 CVR</div><div class="kv" id="kpi-g-cvr">—</div><div class="ks kn" id="kpi-g-cvr-bdg">—</div></div>
+  </div>
+
+  <div class="cb"><h4>Summary 코멘트</h4><div class="ins-i" id="cmt-sum">—</div></div>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>날짜</th><th>요일</th><th>네이버 광고비</th><th>네이버 전환</th><th>네이버 CPA</th><th>구글 광고비</th><th>구글 전환</th><th>구글 CPA</th></tr></thead>
+      <tbody id="sum-tbl"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════ 네이버 PC ═══════════ -->
+<div id="tab-ppc" class="pg">
+  <div class="wk-bar">
+    <span style="font-size:12px;font-weight:700;color:#0a6e4c">주차 선택</span>
+    <select id="ppc-week-sel" onchange="onSecWeekChange('ppc',this.value)" style="border-color:#a8dfc8"></select>
+  </div>
+  <div id="ppc-title" class="sec-title"></div>
+  <div class="kg kg5" id="ppc-kg"></div>
+  <div class="cb"><h4>네이버 PC 코멘트</h4><div class="ins-i" id="cmt-ppc">—</div></div>
+  <div class="tw"><table><thead><tr><th>날짜</th><th>요일</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th><th>순위</th></tr></thead><tbody id="ppc-tbl"></tbody></table></div>
+  <div class="kw-section">
+    <div class="kw-label" id="ppc-conv-sec">전환 발생 키워드</div>
+    <div class="tw"><table><thead><tr><th>키워드</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th><th>상태</th></tr></thead><tbody id="ppc-conv-tbl"></tbody></table></div>
+    <div class="kw-label" style="margin-top:.8rem" id="ppc-spend-sec">광고비 상위 키워드</div>
+    <div class="tw"><table><thead><tr><th>키워드</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th><th>상태</th></tr></thead><tbody id="ppc-spend-tbl"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ═══════════ 네이버 MO ═══════════ -->
+<div id="tab-pmo" class="pg">
+  <div class="wk-bar">
+    <span style="font-size:12px;font-weight:700;color:#0a6e4c">주차 선택</span>
+    <select id="pmo-week-sel" onchange="onSecWeekChange('pmo',this.value)" style="border-color:#a8dfc8"></select>
+  </div>
+  <div id="pmo-title" class="sec-title"></div>
+  <div class="kg kg5" id="pmo-kg"></div>
+  <div class="cb"><h4>네이버 MO 코멘트</h4><div class="ins-i" id="cmt-pmo">—</div></div>
+  <div class="tw"><table><thead><tr><th>날짜</th><th>요일</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th><th>순위</th></tr></thead><tbody id="pmo-tbl"></tbody></table></div>
+  <div class="kw-section">
+    <div class="kw-label" id="pmo-conv-sec">전환 발생 키워드</div>
+    <div class="tw"><table><thead><tr><th>키워드</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th><th>상태</th></tr></thead><tbody id="pmo-conv-tbl"></tbody></table></div>
+    <div class="kw-label" style="margin-top:.8rem" id="pmo-spend-sec">광고비 상위 키워드</div>
+    <div class="tw"><table><thead><tr><th>키워드</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th><th>상태</th></tr></thead><tbody id="pmo-spend-tbl"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ═══════════ 자동입찰 ═══════════ -->
+<div id="tab-pau" class="pg">
+  <div class="wk-bar">
+    <span style="font-size:12px;font-weight:700;color:#0a6e4c">주차 선택</span>
+    <select id="pau-week-sel" onchange="onSecWeekChange('pau',this.value)" style="border-color:#a8dfc8"></select>
+  </div>
+  <div id="pau-title" class="sec-title"></div>
+  <div class="cb"><h4>자동입찰 코멘트</h4><div class="ins-i" id="cmt-pau">—</div></div>
+  <div id="pau-auto-area"></div>
+</div>
+
+<!-- ═══════════ 구글 브랜드 ═══════════ -->
+<div id="tab-pgb" class="pg">
+  <div class="wk-bar wk-bar-g">
+    <span style="font-size:12px;font-weight:700;color:#0d4a8a">주차 선택</span>
+    <select id="pgb-week-sel" onchange="onSecWeekChange('pgb',this.value)"></select>
+  </div>
+  <div id="pgb-title" class="sec-title"></div>
+  <div class="kg kg5" id="pgb-kg"></div>
+  <div class="cb"><h4>구글 브랜드 코멘트</h4><div class="ins-i" id="cmt-pgb">—</div></div>
+  <div class="tw"><table><thead><tr><th>날짜</th><th>요일</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th></tr></thead><tbody id="pgb-tbl"></tbody></table></div>
+  <div class="kw-section">
+    <div class="kw-label" id="pgb-kw-sec">키워드별 성과</div>
+    <div class="tw"><table><thead><tr><th>키워드</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th><th>상태</th></tr></thead><tbody id="pgb-kw-tbl"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ═══════════ 구글 경쟁사 ═══════════ -->
+<div id="tab-pgc" class="pg">
+  <div class="wk-bar wk-bar-g">
+    <span style="font-size:12px;font-weight:700;color:#0d4a8a">주차 선택</span>
+    <select id="pgc-week-sel" onchange="onSecWeekChange('pgc',this.value)"></select>
+  </div>
+  <div id="pgc-title" class="sec-title"></div>
+  <div class="kg kg5" id="pgc-kg"></div>
+  <div class="cb"><h4>구글 경쟁사 코멘트</h4><div class="ins-i" id="cmt-pgc">—</div></div>
+  <div class="tw"><table><thead><tr><th>날짜</th><th>요일</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th></tr></thead><tbody id="pgc-tbl"></tbody></table></div>
+  <div class="kw-section">
+    <div class="kw-label" id="pgc-kw-sec">키워드별 성과</div>
+    <div class="tw"><table><thead><tr><th>키워드</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th><th>상태</th></tr></thead><tbody id="pgc-kw-tbl"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ═══════════ 구글 일반 ═══════════ -->
+<div id="tab-pgg" class="pg">
+  <div class="wk-bar wk-bar-g">
+    <span style="font-size:12px;font-weight:700;color:#0d4a8a">주차 선택</span>
+    <select id="pgg-week-sel" onchange="onSecWeekChange('pgg',this.value)"></select>
+  </div>
+  <div id="pgg-title" class="sec-title"></div>
+  <div class="kg kg5" id="pgg-kg"></div>
+  <div class="cb"><h4>구글 일반 코멘트</h4><div class="ins-i" id="cmt-pgg">—</div></div>
+  <div class="tw"><table><thead><tr><th>날짜</th><th>요일</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th></tr></thead><tbody id="pgg-tbl"></tbody></table></div>
+  <div class="kw-section">
+    <div class="kw-label" id="pgg-kw-sec">키워드별 성과</div>
+    <div class="tw"><table><thead><tr><th>키워드</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th><th>상태</th></tr></thead><tbody id="pgg-kw-tbl"></tbody></table></div>
+  </div>
+</div>
+
+<script>
+// ── 데이터 ──
+const WL              = {{WEEKS_LIST_JSON}};
+const allWeeklyKpi    = {{ALL_WEEKLY_KPI_JSON}};
+const allWeeklyComments = {{ALL_WEEKLY_COMMENTS_JSON}};
+const TARGET_CPA      = {{TARGET_CPA}};
+const DATA_YEAR       = {{YEAR}};
+const DATA_MONTH      = {{MONTH}};
+
+// ── 탭 전환 ──
+function showTab(id, btn){
+  document.querySelectorAll('.pg').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+// ── 숫자 포맷 ──
+function _fmtSpend(v){
+  if(v>=10000) return (v/10000).toFixed(1)+'만원';
+  return v.toLocaleString()+'원';
+}
+function _fmtNum(v){ return v?v.toLocaleString():'—'; }
+
+// ── 배지 생성 ──
+function _diffBadge(curr, prev, reverse){
+  if(!prev||prev===0) return {text:'전주 데이터 없음',cls:'kn'};
+  const pct=Math.round((curr-prev)/prev*100);
+  const sign=pct>=0?'+':'';
+  if(reverse){
+    const cls=curr<prev?'ku':'kd';
+    const lbl=curr<prev?'개선':'상승';
+    const pv=prev>9999?_fmtSpend(prev):(prev.toLocaleString()+'원');
+    return {text:`전주(${pv}) 대비 ${lbl}`,cls};
+  }
+  return {text:`전주(${_fmtSpend(prev)}) 대비 ${sign}${pct}%`,cls:pct<0?'ku':'kd'};
+}
+function _cvrBadge(curr,prev){
+  if(!prev) return {text:'전주 데이터 없음',cls:'kn'};
+  const lbl=curr>prev?'상승':'하락';
+  return {text:`전주(${prev}%) 대비 ${lbl}`,cls:curr>prev?'kd':'ku'};
+}
+function _convBadge(curr,prev){
+  if(prev===null||prev===undefined) return {text:'전주 데이터 없음',cls:'kn'};
+  if(curr>prev) return {text:`전주(${prev}건) 대비 증가`,cls:'ku'};
+  if(curr<prev) return {text:`전주(${prev}건) 대비 감소`,cls:'kd'};
+  return {text:`전주(${prev}건) 동일`,cls:'kn'};
+}
+function _setBadge(id, b){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.textContent=b.text; el.className='ks '+b.cls;
+}
+function _setTxt(id,v){ const el=document.getElementById(id); if(el) el.textContent=v; }
+
+// ── KPI 그리드 렌더링 ──
+function _renderKpiGrid(gridId, cards){
+  const el=document.getElementById(gridId);
+  if(!el) return;
+  el.innerHTML=cards.map(c=>
+    `<div class="ki"><div class="kl">${c.label}</div><div class="kv">${c.value}</div><div class="ks ${c.cls}">${c.text}</div></div>`
+  ).join('');
+}
+
+function _pageCards(curr, prev, key){
+  const c=curr[key]||{spend:0,conv:0,cpa:0,cpc:0,cvr:0,clk:0,imp:0};
+  const p=prev?(prev[key]||null):null;
+  const cpaCls=c.cpa>0&&c.cpa<=TARGET_CPA?'ku':c.cpa>TARGET_CPA?'kd':'kn';
+  const spB=_diffBadge(c.spend,p?.spend,false);
+  const cpcB=_diffBadge(c.cpc,p?.cpc,true);
+  const cvB=_convBadge(c.conv,p?.conv);
+  const cpaB=_diffBadge(c.cpa,p?.cpa,true);
+  const cvrB=_cvrBadge(c.cvr,p?.cvr);
+  return [
+    {label:'주간 광고비', value:_fmtSpend(c.spend), ...spB},
+    {label:'주간 CPC',    value:_fmtNum(c.cpc)+'원',  ...cpcB},
+    {label:'주간 전환',   value:c.conv+'건',            ...cvB},
+    {label:'주간 CPA',    value:_fmtNum(c.cpa)+'원',   text:cpaB.text, cls:cpaCls},
+    {label:'주간 CVR',    value:c.cvr+'%',              ...cvrB},
+  ];
+}
+
+// ── 일별 breakdown 표 ──
+function _renderDailyTable(tbodyId, rows, hasRank){
+  const tb=document.getElementById(tbodyId);
+  if(!tb||!rows||!rows.length){if(tb)tb.innerHTML='<tr><td colspan="12">데이터 없음</td></tr>';return;}
+  tb.innerHTML=rows.map(r=>{
+    const cpaCls=r.cpa>0&&r.cpa<=TARGET_CPA?' class="cpa-ok"':r.cpa>TARGET_CPA*1.5?' class="cpa-hi"':'';
+    const rank=hasRank?`<td class="r">${r.rank>0?r.rank:'—'}</td>`:'';
+    return `<tr>
+      <td>${r.date}</td><td>${r.day}</td>
+      <td class="r">${r.imp?r.imp.toLocaleString():'—'}</td>
+      <td class="r">${r.clk?r.clk.toLocaleString():'—'}</td>
+      <td class="r">${r.spend?_fmtSpend(r.spend):'—'}</td>
+      <td class="r">${r.ctr?r.ctr+'%':'—'}</td>
+      <td class="r">${r.cpc?r.cpc.toLocaleString()+'원':'—'}</td>
+      <td class="r">${r.conv}건</td>
+      <td class="r">${r.cvr?r.cvr+'%':'—'}</td>
+      <td class="r"${cpaCls}>${r.cpa?r.cpa.toLocaleString()+'원':'—'}</td>
+      ${rank}
+    </tr>`;
+  }).join('');
+}
+
+function _renderSumTable(tbodyId, wkData){
+  const tb=document.getElementById(tbodyId);
+  if(!tb) return;
+  const npcRows=wkData.daily_rows?.npc||[];
+  const nmoRows=wkData.daily_rows?.nmo||[];
+  const gbRows=wkData.daily_rows?.gb||[];
+  const gcRows=wkData.daily_rows?.gc||[];
+  const ggRows=wkData.daily_rows?.gg||[];
+  const dates=wkData.dates||[];
+  tb.innerHTML=dates.map((d,i)=>{
+    const np=npcRows[i]||{}; const nm=nmoRows[i]||{};
+    const gb=gbRows[i]||{}; const gc=gcRows[i]||{}; const gg=ggRows[i]||{};
+    const nSp=(np.spend||0)+(nm.spend||0);
+    const nCv=Math.round(((np.conv||0)+(nm.conv||0))*10)/10;
+    const nCpa=nCv>0?Math.round(nSp/nCv):0;
+    const gSp=(gb.spend||0)+(gc.spend||0)+(gg.spend||0);
+    const gCv=Math.round(((gb.conv||0)+(gc.conv||0)+(gg.conv||0))*10)/10;
+    const gCpa=gCv>0?Math.round(gSp/gCv):0;
+    const nCpaCls=nCpa>0&&nCpa<=TARGET_CPA?' class="cpa-ok"':nCpa>TARGET_CPA*1.5?' class="cpa-hi"':'';
+    const gCpaCls=gCpa>0&&gCpa<=TARGET_CPA?' class="cpa-ok"':gCpa>TARGET_CPA*1.5?' class="cpa-hi"':'';
+    const day=np.day||'';
+    return `<tr>
+      <td>${d}</td><td>${day}</td>
+      <td class="r">${nSp?_fmtSpend(nSp):'—'}</td>
+      <td class="r">${nCv}건</td>
+      <td class="r"${nCpaCls}>${nCpa?nCpa.toLocaleString()+'원':'—'}</td>
+      <td class="r">${gSp?_fmtSpend(gSp):'—'}</td>
+      <td class="r">${gCv}건</td>
+      <td class="r"${gCpaCls}>${gCpa?gCpa.toLocaleString()+'원':'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── 키워드 표 ──
+function _kwBadge(conv,cpa){
+  if(conv<=0) return '<span class="bg bwa">전환 미발생</span>';
+  if(cpa<=TARGET_CPA) return '<span class="bg bok">목표 달성</span>';
+  if(cpa<=TARGET_CPA*1.5) return '<span class="bg bok">목표 근접</span>';
+  if(cpa<=TARGET_CPA*3) return '<span class="bg bwa">CPA 초과</span>';
+  return '<span class="bg bdn">CPA 높음</span>';
+}
+function _kwRow(k){
+  const cpaHtml=k.conv>0?k.cpa.toLocaleString():'—';
+  const cpaSt=k.conv>0&&k.cpa>TARGET_CPA*3?' style="color:var(--rd)"':k.conv>0&&k.cpa>TARGET_CPA?' style="color:#b06d10"':'';
+  return `<tr><td class="l">[${k.kw}]</td>
+    <td class="r">${k.imp?k.imp.toLocaleString():'—'}</td>
+    <td class="r">${k.clk?k.clk.toLocaleString():'—'}</td>
+    <td class="r">${k.spend?_fmtSpend(k.spend):'—'}</td>
+    <td class="r">${k.ctr?k.ctr+'%':'—'}</td>
+    <td class="r">${k.cpc?k.cpc.toLocaleString():'—'}</td>
+    <td class="r">${k.conv}건</td>
+    <td class="r">${k.cvr?k.cvr+'%':'—'}</td>
+    <td class="r"${cpaSt}>${cpaHtml}</td>
+    <td>${_kwBadge(k.conv,k.cpa)}</td></tr>`;
+}
+function _renderNaverKwTables(pageId, kwData, weekLabel){
+  const lbl=weekLabel+' ';
+  const convEl=document.getElementById(pageId+'-conv-sec');
+  const spEl=document.getElementById(pageId+'-spend-sec');
+  if(convEl) convEl.textContent=lbl+'전환 발생 키워드';
+  if(spEl)   spEl.textContent=lbl+'광고비 상위 키워드 (상위 15개)';
+  const convTb=document.getElementById(pageId+'-conv-tbl');
+  const spTb=document.getElementById(pageId+'-spend-tbl');
+  if(convTb){
+    const cKws=kwData.filter(k=>k.conv>0).sort((a,b)=>b.conv-a.conv);
+    convTb.innerHTML=cKws.length?cKws.map(_kwRow).join(''):'<tr><td colspan="10">전환 발생 키워드 없음</td></tr>';
+  }
+  if(spTb){
+    const sKws=kwData.slice().sort((a,b)=>b.spend-a.spend).slice(0,15);
+    spTb.innerHTML=sKws.length?sKws.map(_kwRow).join(''):'<tr><td colspan="10">데이터 없음</td></tr>';
+  }
+}
+function _renderGoogleKwTable(pageId, kwData, weekLabel){
+  const secEl=document.getElementById(pageId+'-kw-sec');
+  if(secEl) secEl.textContent=weekLabel+' 키워드별 성과';
+  const tb=document.getElementById(pageId+'-kw-tbl');
+  if(!tb) return;
+  const sorted=kwData.slice().sort((a,b)=>b.spend-a.spend);
+  tb.innerHTML=sorted.length?sorted.map(_kwRow).join(''):'<tr><td colspan="10">데이터 없음</td></tr>';
+}
+
+// ── 자동입찰 섹션 ──
+const AUTO_KWS = ["입주청소","이사청소","입주청소비용","입주청소가격","입주청소전문"];
+
+function _renderAutoArea(wkData, prevData, weekLabel){
+  const area=document.getElementById('pau-auto-area');
+  if(!area) return;
+  let html='';
+  for(const kw of AUTO_KWS){
+    html+=`<div class="auto-kw-block">`;
+    for(const dev of ['MO','PC']){
+      const tag=`[${dev}] ${kw}`;
+      const rows=(wkData.auto_daily?.[kw]?.[dev])||[];
+      const wk=(wkData.auto_weekly?.[kw]?.[dev])||{};
+      const pw=(prevData?.auto_weekly?.[kw]?.[dev])||null;
+      // 주간 합산 배지
+      let wkSumHtml='';
+      if(wk.spend>0){
+        const cvB=pw?_convBadge(wk.conv,pw.conv):{text:'전주 데이터 없음',cls:'kn'};
+        const cpaB=pw&&pw.cpa>0?_diffBadge(wk.cpa,pw.cpa,true):{text:'',cls:'kn'};
+        wkSumHtml=`<span style="font-size:12px;color:var(--tx2)"> · 전환 ${wk.conv}건 CPA ${wk.cpa?wk.cpa.toLocaleString()+'원':'—'} 노출순위 ${wk.rank||'—'}위</span>`
+          +` <span class="ks ${cvB.cls}">${cvB.text}</span>`
+          +(cpaB.text?` <span class="ks ${cpaB.cls}">${cpaB.text}</span>`:'');
+      } else {
+        wkSumHtml=`<span style="font-size:12px;color:var(--tx3)"> · 주간 데이터 없음</span>`;
+      }
+      html+=`<div style="margin-bottom:.6rem">
+        <div class="auto-kw-title">${tag}${wkSumHtml}</div>`;
+      if(rows.length>0&&wk.spend>0){
+        html+=`<div class="tw"><table>
+          <thead><tr><th>날짜</th><th>요일</th><th>광고비</th><th>전환</th><th>CPA</th><th>CPC</th><th>노출순위</th></tr></thead>
+          <tbody>${rows.map(r=>{
+            const cpaCls=r.cpa>0&&r.cpa<=TARGET_CPA?'class="cpa-ok"':r.cpa>TARGET_CPA*1.5?'class="cpa-hi"':'';
+            return `<tr><td>${r.date}</td><td>${r.day}</td>
+              <td class="r">${r.spend?_fmtSpend(r.spend):'—'}</td>
+              <td class="r">${r.conv}건</td>
+              <td class="r" ${cpaCls}>${r.cpa?r.cpa.toLocaleString()+'원':'—'}</td>
+              <td class="r">${r.cpc?r.cpc.toLocaleString()+'원':'—'}</td>
+              <td class="r">${r.rank>0?r.rank+'위':'—'}</td></tr>`;
+          }).join('')}</tbody></table></div>`;
+      }
+      html+='</div>';
+    }
+    html+='</div>';
+  }
+  area.innerHTML=html;
+}
+
+// ── 코멘트 설정 ──
+function _setCmt(id, txt){
+  const el=document.getElementById(id);
+  if(!el) return;
+  if(!txt){el.textContent='—';return;}
+  // 줄바꿈 처리
+  el.innerHTML=txt.replace(/\n/g,'<br>').replace(/\.\s+(?=[가-힣\[\(A-Za-z0-9\<])/g,'.<br>');
+}
+
+// ── Summary KPI ──
+function _renderSummaryKpi(curr, prev){
+  const lbl='전주';
+  // 네이버
+  _setTxt('kpi-n-spend', _fmtSpend(curr.n_spend));
+  _setTxt('kpi-n-cpc',   _fmtNum(curr.n_cpc)+'원');
+  _setTxt('kpi-n-cpa',   _fmtNum(curr.n_cpa)+'원');
+  _setTxt('kpi-n-cvr',   curr.n_cvr+'%');
+  if(prev){
+    _setBadge('kpi-n-spend-bdg',_diffBadge(curr.n_spend,prev.n_spend,false));
+    _setBadge('kpi-n-cpc-bdg',  _diffBadge(curr.n_cpc,  prev.n_cpc,  true));
+    _setBadge('kpi-n-cpa-bdg',  _diffBadge(curr.n_cpa,  prev.n_cpa,  true));
+    _setBadge('kpi-n-cvr-bdg',  _cvrBadge(curr.n_cvr,   prev.n_cvr));
+  } else {
+    ['kpi-n-spend-bdg','kpi-n-cpc-bdg','kpi-n-cpa-bdg','kpi-n-cvr-bdg'].forEach(id=>{
+      const el=document.getElementById(id); if(el){el.textContent='전주 데이터 없음';el.className='ks kn';}
+    });
+  }
+  // 구글
+  _setTxt('kpi-g-spend', _fmtSpend(curr.g_spend));
+  _setTxt('kpi-g-cpc',   _fmtNum(curr.g_cpc)+'원');
+  _setTxt('kpi-g-cpa',   _fmtNum(curr.g_cpa)+'원');
+  _setTxt('kpi-g-cvr',   curr.g_cvr+'%');
+  if(prev){
+    _setBadge('kpi-g-spend-bdg',_diffBadge(curr.g_spend,prev.g_spend,false));
+    _setBadge('kpi-g-cpc-bdg',  _diffBadge(curr.g_cpc,  prev.g_cpc,  true));
+    _setBadge('kpi-g-cpa-bdg',  _diffBadge(curr.g_cpa,  prev.g_cpa,  true));
+    _setBadge('kpi-g-cvr-bdg',  _cvrBadge(curr.g_cvr,   prev.g_cvr));
+  } else {
+    ['kpi-g-spend-bdg','kpi-g-cpc-bdg','kpi-g-cpa-bdg','kpi-g-cvr-bdg'].forEach(id=>{
+      const el=document.getElementById(id); if(el){el.textContent='전주 데이터 없음';el.className='ks kn';}
+    });
+  }
+}
+
+// ── 메인 업데이트 ──
+function onWeekChange(weekLabel){
+  const idx=WL.indexOf(weekLabel);
+  const curr=allWeeklyKpi[weekLabel];
+  const prevLabel=idx>0?WL[idx-1]:null;
+  const prev=prevLabel?allWeeklyKpi[prevLabel]:null;
+
+  // Summary title
+  const titleEl=document.getElementById('sum-title');
+  if(titleEl){
+    const cmp=prev?` — 전주(${prev.range}) 대비`:'';
+    titleEl.textContent=`${weekLabel} (${curr.range}) 요약${cmp}`;
+  }
+  const rangeEl=document.getElementById('sum-range-label');
+  if(rangeEl) rangeEl.textContent=curr.range;
+
+  // Summary KPI
+  _renderSummaryKpi(curr, prev);
+
+  // Summary table
+  _renderSumTable('sum-tbl', curr);
+
+  // Summary comment
+  const cmt=allWeeklyComments[weekLabel];
+  if(cmt) _setCmt('cmt-sum', cmt.SUMMARY);
+
+  // 서브페이지 동기화
+  _updateSubPage('ppc','npc','npc_kw','네이버 SA · PC',true,true,weekLabel,curr,prev);
+  _updateSubPage('pmo','nmo','nmo_kw','네이버 SA · MO',true,true,weekLabel,curr,prev);
+  _updateSubPage('pgb','gb','gb_kw','구글 SA · 브랜드',false,false,weekLabel,curr,prev);
+  _updateSubPage('pgc','gc','gc_kw','구글 SA · 경쟁사',false,false,weekLabel,curr,prev);
+  _updateSubPage('pgg','gg','gg_kw','구글 SA · 일반',false,false,weekLabel,curr,prev);
+  _updateAutoPage(weekLabel,curr,prev);
+
+  // 서브페이지 드롭다운 동기화
+  ['ppc','pmo','pgb','pgc','pgg','pau'].forEach(pid=>{
+    const sel=document.getElementById(pid+'-week-sel');
+    if(sel) sel.value=weekLabel;
+  });
+}
+
+function _updateSubPage(pageId, dataKey, kwKey, pageLabel, hasRank, isNaver, weekLabel, curr, prev){
+  // title
+  const t=document.getElementById(pageId+'-title');
+  if(t){
+    const cmp=prev?` — 전주(${prev.range}) 대비`:'';
+    t.textContent=`${pageLabel} — ${weekLabel} (${curr.range})${cmp}`;
+  }
+  // KPI grid
+  _renderKpiGrid(pageId+'-kg', _pageCards(curr,prev,dataKey));
+  // table
+  _renderDailyTable(pageId+'-tbl', curr.daily_rows?.[dataKey], hasRank);
+  // keyword
+  const kwData=curr[kwKey]||[];
+  if(isNaver) _renderNaverKwTables(pageId, kwData, weekLabel);
+  else _renderGoogleKwTable(pageId, kwData, weekLabel);
+  // comment
+  const cmt=allWeeklyComments[weekLabel];
+  if(cmt){
+    const cmtKey={ppc:'N_PC',pmo:'N_MO',pgb:'G_BRAND',pgc:'G_COMP',pgg:'G_GEN'}[pageId];
+    if(cmtKey) _setCmt('cmt-'+pageId, cmt[cmtKey]);
+  }
+}
+
+function _updateAutoPage(weekLabel, curr, prev){
+  const t=document.getElementById('pau-title');
+  if(t){
+    const cmp=prev?` — 전주(${prev.range}) 대비`:'';
+    t.textContent=`네이버 자동입찰 — ${weekLabel} (${curr.range})${cmp}`;
+  }
+  _renderAutoArea(curr, prev, weekLabel);
+  const cmt=allWeeklyComments[weekLabel];
+  if(cmt) _setCmt('cmt-pau', cmt.AUTO);
+}
+
+function onSecWeekChange(pageId, weekLabel){
+  const idx=WL.indexOf(weekLabel);
+  const curr=allWeeklyKpi[weekLabel];
+  const prevLabel=idx>0?WL[idx-1]:null;
+  const prev=prevLabel?allWeeklyKpi[prevLabel]:null;
+  if(pageId==='pau') _updateAutoPage(weekLabel,curr,prev);
+  else{
+    const cfg={
+      ppc:{key:'npc',kwKey:'npc_kw',label:'네이버 SA · PC',rank:true,naver:true},
+      pmo:{key:'nmo',kwKey:'nmo_kw',label:'네이버 SA · MO',rank:true,naver:true},
+      pgb:{key:'gb', kwKey:'gb_kw', label:'구글 SA · 브랜드',rank:false,naver:false},
+      pgc:{key:'gc', kwKey:'gc_kw', label:'구글 SA · 경쟁사',rank:false,naver:false},
+      pgg:{key:'gg', kwKey:'gg_kw', label:'구글 SA · 일반',rank:false,naver:false},
+    }[pageId];
+    if(cfg) _updateSubPage(pageId,cfg.key,cfg.kwKey,cfg.label,cfg.rank,cfg.naver,weekLabel,curr,prev);
+  }
+}
+
+// ── 초기화 ──
+(function(){
+  const last=WL[WL.length-1];
+  // 드롭다운 공통 초기화
+  ['sum-week-sel','ppc-week-sel','pmo-week-sel','pau-week-sel','pgb-week-sel','pgc-week-sel','pgg-week-sel'].forEach(selId=>{
+    const sel=document.getElementById(selId);
+    if(!sel) return;
+    WL.forEach(lbl=>{
+      const opt=document.createElement('option');
+      opt.value=lbl; opt.textContent=lbl;
+      sel.appendChild(opt);
+    });
+    sel.value=last;
+  });
+  onWeekChange(last);
+})();
+</script>
+
+<script>
+// 빌드 상태 표시
+(function(){
+  var API='https://api.github.com/repos/newmediabcd/homecleaning-dashboard/actions/runs?per_page=10';
+  var el=document.getElementById('build-status');
+  var _etag=null, _lastRuns=[];
+  function _processRuns(runs){
+    var active=null;
+    for(var i=0;i<runs.length;i++){
+      var r=runs[i];
+      if(r.status==='in_progress'||r.status==='queued'||r.status==='waiting'){active=r;break;}
+    }
+    if(active){el.classList.remove('hidden');}
+    else{el.classList.add('hidden');}
+  }
+  function check(){
+    var headers={};
+    if(_etag) headers['If-None-Match']=_etag;
+    fetch(API,{headers:headers}).then(function(r){
+      if(r.status===304){_processRuns(_lastRuns);return null;}
+      var et=r.headers.get('ETag'); if(et) _etag=et;
+      return r.json();
+    }).then(function(data){
+      if(!data) return;
+      _lastRuns=data.workflow_runs||[];
+      _processRuns(_lastRuns);
+    }).catch(function(){});
+  }
+  check();
+  setInterval(check,10000);
+})();
+</script>
+</body>
+</html>
