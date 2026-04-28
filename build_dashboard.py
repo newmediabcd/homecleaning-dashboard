@@ -1723,10 +1723,22 @@ def main():
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(output)
 
-    # index.html 로도 저장 (GitHub Pages 배포용)
-    index_path = os.path.join(BASE_DIR, "index.html")
-    with open(index_path, "w", encoding="utf-8") as f:
+    # 크린토피아_daily/index.html (GitHub Pages /크린토피아_daily/ 경로)
+    daily_dir = os.path.join(BASE_DIR, "크린토피아_daily")
+    os.makedirs(daily_dir, exist_ok=True)
+    with open(os.path.join(daily_dir, "index.html"), "w", encoding="utf-8") as f:
         f.write(output)
+
+    # 루트 index.html → 리다이렉트 (하위 호환)
+    redirect_html = (
+        '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">'
+        '<meta http-equiv="refresh" content="0; url=크린토피아_daily/">'
+        '<link rel="canonical" href="크린토피아_daily/">'
+        '<title>크린토피아 홈클리닝</title></head>'
+        '<body><p><a href="크린토피아_daily/">대시보드로 이동</a></p></body></html>'
+    )
+    with open(os.path.join(BASE_DIR, "index.html"), "w", encoding="utf-8") as f:
+        f.write(redirect_html)
 
     print(f"\n{'='*55}")
     print(f"  ✅ 완료! → {out_name}")
