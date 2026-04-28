@@ -1394,6 +1394,7 @@ document.querySelectorAll(".ins-i").forEach(el=>{
     fetch(API, {headers: headers})
       .then(function(r){
         if(r.status === 304){ _processRuns(_lastRuns); return null; }
+        if(r.status !== 200) return null; // rate limit 등 비정상 응답 → 현재 상태 유지
         var et = r.headers.get('ETag');
         if(et) _etag = et;
         return r.json();

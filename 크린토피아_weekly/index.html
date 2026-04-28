@@ -117,7 +117,7 @@ tr:hover td{background:#f5f9ff}
   <div><span class="t-title">크린토피아 <span>홈클리닝</span> · Weekly</span><span class="pill">2026년 4월</span></div>
   <div style="display:flex;align-items:center;gap:12px">
     <span class="build-status" id="build-status"><span class="build-spinner"></span>데이터 업데이트 중</span>
-    <div class="t-meta">업데이트: 2026/04/28 15:26</div>
+    <div class="t-meta">업데이트: 2026/04/28 15:32</div>
   </div>
 </div>
 
@@ -630,6 +630,7 @@ function onSecWeekChange(pageId, weekLabel){
     if(_etag) headers['If-None-Match']=_etag;
     fetch(API,{headers:headers}).then(function(r){
       if(r.status===304){_processRuns(_lastRuns);return null;}
+      if(r.status!==200) return null; // rate limit 등 비정상 응답 → 현재 상태 유지
       var et=r.headers.get('ETag'); if(et) _etag=et;
       return r.json();
     }).then(function(data){
