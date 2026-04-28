@@ -104,8 +104,16 @@ def get_week_ranges(df: pd.DataFrame) -> list:
             "year":   year, "month": month,
         })
 
+    today = datetime.today().date()
     active_set = set(d.strftime("%m/%d") for d in active)
-    return [wk for wk in weeks if any(d in active_set for d in wk["dates"])]
+
+    def _week_ended(wk):
+        last_day_str = wk["dates"][-1]  # "MM/DD"
+        m, d = int(last_day_str.split("/")[0]), int(last_day_str.split("/")[1])
+        return datetime(wk["year"], m, d).date() < today
+
+    return [wk for wk in weeks
+            if any(d in active_set for d in wk["dates"]) and _week_ended(wk)]
 
 
 # ══════════════════════════════════════════
