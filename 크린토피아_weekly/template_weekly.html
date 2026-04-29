@@ -73,13 +73,13 @@ body{font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo','Malgun Gothic
 
 /* TABLE */
 .tw{background:#fff;border:1px solid var(--b);border-radius:0;overflow:hidden;margin-bottom:1.2rem}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th{font-size:11px;font-weight:700;color:var(--th-tx);text-align:center;padding:8px 10px;border-bottom:2px solid var(--ki-border);border-right:1px solid var(--ki-border);white-space:nowrap;background:var(--th-bg)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:12px;font-weight:700;color:var(--th-tx);text-align:center;padding:8px 10px;border-bottom:2px solid var(--ki-border);border-right:1px solid var(--ki-border);white-space:nowrap;background:var(--th-bg)}
 th:last-child{border-right:none}
 td{padding:7px 10px;border-bottom:1px solid var(--b);border-right:1px solid rgba(0,0,0,0.06);color:var(--tx);vertical-align:middle;background:#fff;text-align:center}
 td:last-child{border-right:none}
 td.r{text-align:center}
-td.l{text-align:left}
+td.l{text-align:center}
 tr:last-child td{border-bottom:1px solid var(--b)}
 tr:hover td{background:#f5f9ff}
 .tnew td{background:var(--tnew-bg);border-top:2px solid var(--tnew-bd);border-bottom:2px solid var(--tnew-bd);border-right:1px solid rgba(0,0,0,0.06)}
@@ -177,7 +177,7 @@ tr:hover td{background:#f5f9ff}
     <div id="cmt-ppc"></div>
   </div>
   <div class="kg kg5" id="ppc-kg"></div>
-  <div class="tw"><table><thead><tr><th>날짜</th><th>요일</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th><th>순위</th></tr></thead><tbody id="ppc-tbl"></tbody></table></div>
+  <div class="tw"><table><thead><tr><th></th><th>노출</th><th>클릭</th><th>광고비</th><th>CPC</th><th>CTR</th><th>전환</th><th>CVR</th><th>CPA</th></tr></thead><tbody id="ppc-cmp-tbl"></tbody></table></div>
   <div class="kw-section">
     <div class="kw-label" id="ppc-conv-sec">전환 발생 키워드</div>
     <div class="tw"><table><thead><tr><th>키워드</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th><th>상태</th></tr></thead><tbody id="ppc-conv-tbl"></tbody></table></div>
@@ -198,7 +198,7 @@ tr:hover td{background:#f5f9ff}
     <div id="cmt-pmo"></div>
   </div>
   <div class="kg kg5" id="pmo-kg"></div>
-  <div class="tw"><table><thead><tr><th>날짜</th><th>요일</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th><th>순위</th></tr></thead><tbody id="pmo-tbl"></tbody></table></div>
+  <div class="tw"><table><thead><tr><th></th><th>노출</th><th>클릭</th><th>광고비</th><th>CPC</th><th>CTR</th><th>전환</th><th>CVR</th><th>CPA</th></tr></thead><tbody id="pmo-cmp-tbl"></tbody></table></div>
   <div class="kw-section">
     <div class="kw-label" id="pmo-conv-sec">전환 발생 키워드</div>
     <div class="tw"><table><thead><tr><th>키워드</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th><th>상태</th></tr></thead><tbody id="pmo-conv-tbl"></tbody></table></div>
@@ -219,7 +219,7 @@ tr:hover td{background:#f5f9ff}
     <div id="cmt-pgb"></div>
   </div>
   <div class="kg kg5" id="pgb-kg"></div>
-  <div class="tw"><table><thead><tr><th>날짜</th><th>요일</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th></tr></thead><tbody id="pgb-tbl"></tbody></table></div>
+  <div class="tw"><table><thead><tr><th></th><th>노출</th><th>클릭</th><th>광고비</th><th>CPC</th><th>CTR</th><th>전환</th><th>CVR</th><th>CPA</th></tr></thead><tbody id="pgb-cmp-tbl"></tbody></table></div>
   <div class="kw-section">
     <div class="kw-label" id="pgb-kw-sec">키워드별 성과</div>
     <div class="tw"><table><thead><tr><th>키워드</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th><th>상태</th></tr></thead><tbody id="pgb-kw-tbl"></tbody></table></div>
@@ -238,7 +238,7 @@ tr:hover td{background:#f5f9ff}
     <div id="cmt-pgc"></div>
   </div>
   <div class="kg kg5" id="pgc-kg"></div>
-  <div class="tw"><table><thead><tr><th>날짜</th><th>요일</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th></tr></thead><tbody id="pgc-tbl"></tbody></table></div>
+  <div class="tw"><table><thead><tr><th></th><th>노출</th><th>클릭</th><th>광고비</th><th>CPC</th><th>CTR</th><th>전환</th><th>CVR</th><th>CPA</th></tr></thead><tbody id="pgc-cmp-tbl"></tbody></table></div>
   <div class="kw-section">
     <div class="kw-label" id="pgc-kw-sec">키워드별 성과</div>
     <div class="tw"><table><thead><tr><th>키워드</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th><th>상태</th></tr></thead><tbody id="pgc-kw-tbl"></tbody></table></div>
@@ -257,7 +257,7 @@ tr:hover td{background:#f5f9ff}
     <div id="cmt-pgg"></div>
   </div>
   <div class="kg kg5" id="pgg-kg"></div>
-  <div class="tw"><table><thead><tr><th>날짜</th><th>요일</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th></tr></thead><tbody id="pgg-tbl"></tbody></table></div>
+  <div class="tw"><table><thead><tr><th></th><th>노출</th><th>클릭</th><th>광고비</th><th>CPC</th><th>CTR</th><th>전환</th><th>CVR</th><th>CPA</th></tr></thead><tbody id="pgg-cmp-tbl"></tbody></table></div>
   <div class="kw-section">
     <div class="kw-label" id="pgg-kw-sec">키워드별 성과</div>
     <div class="tw"><table><thead><tr><th>키워드</th><th>노출</th><th>클릭</th><th>광고비</th><th>CTR</th><th>CPC</th><th>전환</th><th>CVR</th><th>CPA</th><th>상태</th></tr></thead><tbody id="pgg-kw-tbl"></tbody></table></div>
@@ -417,9 +417,9 @@ function _renderCmpTable(tbodyId, curr, prev){
     return `<td style="${col};font-weight:700;text-align:center;background:#f0f2f5">${sign}${pct}%</td>`;
   }).join('');
   tb.innerHTML=
-    `<tr><td style="text-align:left;font-weight:600;color:var(--tx3);white-space:nowrap">전주</td>${prevCells}</tr>`+
-    `<tr><td style="text-align:left;font-weight:700;color:var(--blt);white-space:nowrap">이번주</td>${currCells}</tr>`+
-    `<tr style="background:#f0f2f5"><td style="text-align:left;font-weight:600;color:var(--tx2);white-space:nowrap;background:#f0f2f5">증감</td>${pctCells}</tr>`;
+    `<tr><td style="text-align:center;font-weight:600;color:var(--tx3);white-space:nowrap">전주</td>${prevCells}</tr>`+
+    `<tr><td style="text-align:center;font-weight:700;color:var(--blt);white-space:nowrap">이번주</td>${currCells}</tr>`+
+    `<tr style="background:#f0f2f5"><td style="text-align:center;font-weight:600;color:var(--tx2);white-space:nowrap;background:#f0f2f5">증감</td>${pctCells}</tr>`;
 }
 
 // ── 키워드 표 ──
@@ -559,7 +559,7 @@ function _updateSubPage(pageId, dataKey, kwKey, pageLabel, hasRank, isNaver, wee
     r.textContent=`${curr.range}${cmp}`;
   }
   _renderKpiGrid(pageId+'-kg', _pageCards(curr,prev,dataKey));
-  _renderDailyTable(pageId+'-tbl', curr.daily_rows?.[dataKey], hasRank);
+  _renderCmpTable(pageId+'-cmp-tbl', curr[dataKey]||{}, prev?(prev[dataKey]||null):null);
   const kwData=curr[kwKey]||[];
   if(isNaver) _renderNaverKwTables(pageId, kwData, weekLabel);
   else _renderGoogleKwTable(pageId, kwData, weekLabel);

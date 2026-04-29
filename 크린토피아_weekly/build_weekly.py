@@ -11,8 +11,8 @@ from urllib.parse import quote
 import pandas as pd
 import numpy as np
 
-# 부모 폴더의 config 참조
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# 크린토피아_daily 폴더의 config 참조
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "크린토피아_daily"))
 from config import (
     SHEET_ID, SHEET_MEDIA_RAW,
     GOOGLE_TYPE_RULES, NAVER_PC_KEYWORD,
