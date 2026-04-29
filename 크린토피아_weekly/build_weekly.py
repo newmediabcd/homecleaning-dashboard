@@ -344,24 +344,32 @@ def generate_weekly_comment(wk: dict, prev: dict | None) -> dict:
             lines.append(base + suffix + ".")
         else:
             lines.append(base + ".")
-        # 줄2: 최다 전환 키워드
+        # 줄2: 전환 상위 키워드 (특성별 3~4개)
         conv_kws = sorted([k for k in kws if k["conv"] > 0], key=lambda x: -x["conv"])
         if conv_kws:
-            top = conv_kws[0]
-            kt = _kw_type(top["kw"])
-            lines.append(f"최다 전환 키워드: [{top['kw']}]({kt}) 전환 {top['conv']}건, CPA {top['cpa']:,}원.")
+            by_type = {"메인": [], "지역": [], "브랜드": []}
+            for k in conv_kws:
+                by_type[_kw_type(k["kw"])].append(k)
+            selected = []
+            for t in ["메인", "지역", "브랜드"]:
+                limit = 2 if t == "메인" else 1
+                selected.extend(by_type[t][:limit])
+            selected = sorted(selected, key=lambda x: -x["conv"])[:4]
+            kw_lines = [f"  {_kw_type(k['kw'])}) [{k['kw']}] 전환 {k['conv']}건 / CPA {k['cpa']:,}원"
+                        for k in selected]
+            lines.append("전환 상위 키워드\n" + "\n".join(kw_lines))
         else:
-            lines.append("최다 전환 키워드: 해당 없음 (전환 미발생).")
-        # 줄3: 광고비 상위 5개
+            lines.append("전환 상위 키워드: 해당 없음 (전환 미발생).")
+        # 줄3: 광고비 상위 키워드 (5개, 줄바꿈)
         top5 = sorted(kws, key=lambda x: -x["spend"])[:5]
         if top5:
-            parts = []
-            for k in top5:
+            kw_lines = []
+            for i, k in enumerate(top5, 1):
                 kt = _kw_type(k["kw"])
                 type_tag = f"({kt})" if kt != "메인" else ""
-                perf = f"전환 {k['conv']}건 CPA {k['cpa']:,}원" if k["conv"] > 0 else "전환 미발생"
-                parts.append(f"[{k['kw']}]{type_tag} {_fmt(k['spend'])} / {perf}")
-            lines.append("광고비 상위 5: " + ", ".join(parts) + ".")
+                perf = f"전환 {k['conv']}건 / CPA {k['cpa']:,}원" if k["conv"] > 0 else "전환 미발생"
+                kw_lines.append(f"  {i}. [{k['kw']}]{type_tag} {_fmt(k['spend'])} / {perf}")
+            lines.append("광고비 상위 키워드\n" + "\n".join(kw_lines))
         return "\n".join(lines)
 
     sections["N_PC"]    = ch(wk["npc"], prev["npc"] if hp else None, wk.get("npc_kw", []))
