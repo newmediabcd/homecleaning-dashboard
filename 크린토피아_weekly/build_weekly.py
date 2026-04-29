@@ -355,8 +355,8 @@ def generate_weekly_comment(wk: dict, prev: dict | None) -> dict:
                 limit = 2 if t == "메인" else 1
                 selected.extend(by_type[t][:limit])
             selected = sorted(selected, key=lambda x: -x["conv"])[:4]
-            kw_lines = [f"  {_kw_type(k['kw'])}) [{k['kw']}] 전환 {k['conv']}건 / CPA {k['cpa']:,}원"
-                        for k in selected]
+            kw_lines = [f"  {i}. {_kw_type(k['kw'])}) [{k['kw']}] 전환 {k['conv']}건 / CPA {k['cpa']:,}원"
+                        for i, k in enumerate(selected, 1)]
             lines.append("전환 상위 키워드||" + "||".join(kw_lines))
         else:
             lines.append("전환 상위 키워드: 해당 없음 (전환 미발생).")
