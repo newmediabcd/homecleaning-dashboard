@@ -19,18 +19,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: pip install pandas numpy
-
-      - name: Build dashboard
-        run: cd 크린토피아_daily && python -X utf8 build_dashboard.py || echo "데이터 없음 — 커밋된 HTML로 배포"
-        continue-on-error: true
-
       - uses: actions/configure-pages@v4
 
       - uses: actions/upload-pages-artifact@v3
