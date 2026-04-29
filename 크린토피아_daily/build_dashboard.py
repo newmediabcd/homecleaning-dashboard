@@ -636,7 +636,7 @@ def build_comment_data(naver_pc, naver_mo, google_brand, google_comp, google_gen
             "curr": _kpi(df, curr), "prev": _kpi(df, prev),
             "wd_avg": wd_avg(df),
             "kw": _kw_day(kw_df, curr),
-            "kw_prev": None,
+            "kw_prev": _kw_day(kw_df, prev),
             "kw_wd_avg": _kw_wd_avg(kw_df, recent_wd),
         }
 
@@ -960,18 +960,18 @@ def generate_comments(cd: dict, is_weekend: bool = False, is_monday: bool = Fals
     # 줄3·4: 네이버 SA PC / MO 주요 소진 변화 키워드 (매체별 분리)
     def under_str(sec_key, label):
         sec_data = cd[sec_key]
-        kwa = sec_data.get("kw_wd_avg", {})
+        kw_prev_map = {k["kw"]: k["spend"] for k in (sec_data.get("kw_prev") or [])}
         under = []
         for k in sec_data["kw"]:
-            wa_k = kwa.get(k["kw"], 0)
-            if wa_k > 0:
-                p2 = pdiff(k["spend"], wa_k)
+            prev_spend = kw_prev_map.get(k["kw"], 0)
+            if prev_spend > 0:
+                p2 = pdiff(k["spend"], prev_spend)
                 if p2 is not None and p2 < 0:
                     under.append((f"[{k['kw']}]", p2))
         under = sorted(under, key=lambda x: x[1])[:4]
         if under:
             kw_str = ", ".join(f"{name} {p2:+d}%" for name, p2 in under)
-            return f"네이버 SA {label} 주요 소진 변화 키워드 (광고비 평일일평균 대비): {kw_str}."
+            return f"네이버 SA {label} 주요 소진 변화 키워드 (광고비 {cmp_label} 대비): {kw_str}."
         return f"네이버 SA {label} 주요 키워드 소진 패턴 변화 없음."
 
     s3 = under_str("n_pc", "PC")
