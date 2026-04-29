@@ -12,7 +12,7 @@ import re
 import sys
 import os
 from urllib.parse import quote
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 # ──────────────────────────────────────────
 # 설정 로드
@@ -107,7 +107,7 @@ def get_date_meta(df: pd.DataFrame) -> dict:
         "data_end":    curr.strftime("%m/%d"),
         "all_dates":   all_dates,
         "recent7":     all_dates[-7:],
-        "update_str":  "업데이트: " + datetime.now().strftime("%Y/%m/%d %H:%M"),
+        "update_str":  "업데이트: " + datetime.now(timezone(timedelta(hours=9))).strftime("%Y/%m/%d %H:%M"),
     }
 
 
@@ -1724,9 +1724,7 @@ def main():
         f.write(output)
 
     # 크린토피아_daily/index.html (GitHub Pages /크린토피아_daily/ 경로)
-    daily_dir = os.path.join(BASE_DIR, "크린토피아_daily")
-    os.makedirs(daily_dir, exist_ok=True)
-    with open(os.path.join(daily_dir, "index.html"), "w", encoding="utf-8") as f:
+    with open(os.path.join(BASE_DIR, "index.html"), "w", encoding="utf-8") as f:
         f.write(output)
 
     # 루트 index.html → 리다이렉트 (하위 호환)
@@ -1737,7 +1735,8 @@ def main():
         '<title>크린토피아 홈클리닝</title></head>'
         '<body><p><a href="크린토피아_daily/">대시보드로 이동</a></p></body></html>'
     )
-    with open(os.path.join(BASE_DIR, "index.html"), "w", encoding="utf-8") as f:
+    root_dir = os.path.dirname(BASE_DIR)
+    with open(os.path.join(root_dir, "index.html"), "w", encoding="utf-8") as f:
         f.write(redirect_html)
 
     print(f"\n{'='*55}")
