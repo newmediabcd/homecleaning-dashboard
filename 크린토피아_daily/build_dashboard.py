@@ -936,14 +936,26 @@ def generate_comments(cd: dict, is_weekend: bool = False, is_monday: bool = Fals
         delta = '개선' if curr_cpa < prev_cpa else '상승'
         return f"{label} CPA {curr_cpa:,}원({cmp_label} {prev_cpa:,}원 대비 {delta})"
 
-    pct_pc = pdiff(npc["curr"]["spend"], npc["wd_avg"]["spend"])
-    pct_mo = pdiff(nmo["curr"]["spend"], nmo["wd_avg"]["spend"])
+    pct_pc      = pdiff(npc["curr"]["spend"], npc["wd_avg"]["spend"])
+    pct_pc_cpa  = pdiff(npc["curr"]["cpa"],   npc["wd_avg"]["cpa"])
+    pct_mo      = pdiff(nmo["curr"]["spend"], nmo["wd_avg"]["spend"])
+    pct_mo_cpa  = pdiff(nmo["curr"]["cpa"],   nmo["wd_avg"]["cpa"])
+    pc_avg_str = ""
+    if pct_pc is not None:
+        pc_avg_str = f" 광고비 평일일평균 대비 {pct_pc:+d}%"
+        if pct_pc_cpa is not None:
+            pc_avg_str += f", CPA 평일일평균 대비 {pct_pc_cpa:+d}%"
+        pc_avg_str += "."
+    mo_avg_str = ""
+    if pct_mo is not None:
+        mo_avg_str = f" 광고비 평일일평균 대비 {pct_mo:+d}%"
+        if pct_mo_cpa is not None:
+            mo_avg_str += f", CPA 평일일평균 대비 {pct_mo_cpa:+d}%"
+        mo_avg_str += "."
     s1 = (f"네이버 SA PC: 광고비 {ko(npc['curr']['spend'])} / 전환 {npc['curr']['conv']}건 / CPA {npc['curr']['cpa']:,}원"
-          f" — {cpa_vs(npc['curr']['cpa'], npc['prev']['cpa'])}."
-          + (f" 평일일평균 대비 {pct_pc:+d}%." if pct_pc is not None else ""))
+          f" — {cpa_vs(npc['curr']['cpa'], npc['prev']['cpa'])}." + pc_avg_str)
     s2 = (f"네이버 SA MO: 광고비 {ko(nmo['curr']['spend'])} / 전환 {nmo['curr']['conv']}건 / CPA {nmo['curr']['cpa']:,}원"
-          f" — {cpa_vs(nmo['curr']['cpa'], nmo['prev']['cpa'])}."
-          + (f" 평일일평균 대비 {pct_mo:+d}%." if pct_mo is not None else ""))
+          f" — {cpa_vs(nmo['curr']['cpa'], nmo['prev']['cpa'])}." + mo_avg_str)
 
     # 줄3·4: 네이버 SA PC / MO 주요 소진 변화 키워드 (매체별 분리)
     def under_str(sec_key, label):
@@ -959,7 +971,7 @@ def generate_comments(cd: dict, is_weekend: bool = False, is_monday: bool = Fals
         under = sorted(under, key=lambda x: x[1])[:4]
         if under:
             kw_str = ", ".join(f"{name} {p2:+d}%" for name, p2 in under)
-            return f"네이버 SA {label} 주요 소진 변화 키워드 (평일일평균 대비): {kw_str}."
+            return f"네이버 SA {label} 주요 소진 변화 키워드 (광고비 평일일평균 대비): {kw_str}."
         return f"네이버 SA {label} 주요 키워드 소진 패턴 변화 없음."
 
     s3 = under_str("n_pc", "PC")
