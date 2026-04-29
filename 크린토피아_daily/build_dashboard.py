@@ -726,25 +726,26 @@ def generate_comments(cd: dict, is_weekend: bool = False, is_monday: bool = Fals
     # 네이버 PC
     # ─────────────────────────────────────
     s = cd["n_pc"]
-    c, p, wa, kw, kwa = s["curr"], s["prev"], s["wd_avg"], s["kw"], s.get("kw_wd_avg", {})
+    c, p, kw = s["curr"], s["prev"], s["kw"]
     kw_prev_list = s.get("kw_prev") or []
+    kw_prev_map_pc = {k['kw']: k for k in kw_prev_list}
 
     # 줄1: KPI + 전일 대비 + 목표
     l1 = f"광고비 {ko(c['spend'])}, 전환 {c['conv']}건, CPA {c['cpa']:,}원 — {cpa_vs(c['cpa'], p['cpa'])}. {goal(c['cpa'])}."
 
-    # 줄2: 평일 대비 소진 + 저소진 키워드
-    pct = pdiff(c['spend'], wa['spend'])
+    # 줄2: 전일/전주 대비 소진 + 저소진 키워드
+    pct = pdiff(c['spend'], p['spend'])
     if pct is not None:
         label = "저소진" if pct < 0 else "초과소진"
-        l2 = f"PC 광고비 평일일평균({ko(wa['spend'])}) 대비 {pct:+d}% {label}."
-        under = [(k, pdiff(k['spend'], kwa.get(k['kw'], 0)))
-                 for k in kw if kwa.get(k['kw'], 0) > 0]
+        l2 = f"PC 광고비 {cmp_label}({ko(p['spend'])}) 대비 {pct:+d}% {label}."
+        under = [(k, pdiff(k['spend'], kw_prev_map_pc.get(k['kw'], {}).get('spend', 0)))
+                 for k in kw if kw_prev_map_pc.get(k['kw'], {}).get('spend', 0) > 0]
         under = sorted([(k, p2) for k, p2 in under if p2 is not None and p2 <= -30], key=lambda x: x[1])[:2]
         if under:
-            parts = [f"[{k['kw']}] 평일 {ko(kwa[k['kw']])} → 당일 {ko(k['spend'])}({p2:+d}%)" for k, p2 in under]
+            parts = [f"[{k['kw']}] {cmp_label} {ko(kw_prev_map_pc[k['kw']]['spend'])} → 당일 {ko(k['spend'])}({p2:+d}%)" for k, p2 in under]
             l2 += " " + ", ".join(parts) + "으로 주요 원인 확인."
     else:
-        l2 = "평일일평균 비교 데이터 없음."
+        l2 = f"{cmp_label} 비교 데이터 없음."
 
     # 줄3: 전환 발생 키워드
     conv_kws = [k for k in kw if k['conv'] > 0]
@@ -754,29 +755,26 @@ def generate_comments(cd: dict, is_weekend: bool = False, is_monday: bool = Fals
     else:
         l3 = "당일 전환 발생 키워드 없음."
 
-    # 특이사항: 평일일평균 대비 5만원 이상 감소/과소진 시 키워드 세부 분석
+    # 특이사항: 전일/전주 대비 5만원 이상 감소/과소진 시 키워드 세부 분석
     l_pc_special = None
-    if wa['spend'] > 0 and abs(c['spend'] - wa['spend']) >= 50000:
-        direction = "저소진" if c['spend'] < wa['spend'] else "과소진"
-        # 평일 대비 변화 폭 상위 키워드
-        kw_diff = [(k, pdiff(k['spend'], kwa.get(k['kw'], 0))) for k in kw if kwa.get(k['kw'], 0) > 0]
+    if p['spend'] > 0 and abs(c['spend'] - p['spend']) >= 50000:
+        direction = "저소진" if c['spend'] < p['spend'] else "과소진"
+        kw_diff = [(k, pdiff(k['spend'], kw_prev_map_pc.get(k['kw'], {}).get('spend', 0))) for k in kw if kw_prev_map_pc.get(k['kw'], {}).get('spend', 0) > 0]
         kw_diff = sorted(kw_diff, key=lambda x: abs(x[1]) if x[1] is not None else 0, reverse=True)[:2]
         parts1 = []
         for k, p2 in kw_diff:
             if p2 is not None:
                 kt = _kw_type(k['kw'])
                 parts1.append(
-                    f"[{k['kw']}]({kt} 키워드) 평일 {ko(kwa[k['kw']])} → 당일 {ko(k['spend'])}({p2:+d}%),"
+                    f"[{k['kw']}]({kt} 키워드) {cmp_label} {ko(kw_prev_map_pc[k['kw']]['spend'])} → 당일 {ko(k['spend'])}({p2:+d}%),"
                     f" 클릭 {k['clk']}회, CPC {k['cpc']:,}원, 전환 {k['conv']}건"
                 )
         if parts1:
-            l_pc_special = f"[특이사항] PC 광고비 평일일평균 대비 {direction}. " + " / ".join(parts1) + "."
-        # 주말: 전주 주말 대비 추가
+            l_pc_special = f"[특이사항] PC 광고비 {cmp_label} 대비 {direction}. " + " / ".join(parts1) + "."
         if is_weekend and kw_prev_list:
-            kw_prev_map = {k['kw']: k for k in kw_prev_list}
             parts2 = []
             for k in sorted(kw, key=lambda x: -x['spend'])[:3]:
-                pk = kw_prev_map.get(k['kw'])
+                pk = kw_prev_map_pc.get(k['kw'])
                 if pk and pk['spend'] > 0:
                     p2 = pdiff(k['spend'], pk['spend'])
                     if p2 is not None and abs(p2) >= 15:
@@ -794,19 +792,20 @@ def generate_comments(cd: dict, is_weekend: bool = False, is_monday: bool = Fals
     # 네이버 MO
     # ─────────────────────────────────────
     s = cd["n_mo"]
-    c, p, wa, kw, kwa = s["curr"], s["prev"], s["wd_avg"], s["kw"], s.get("kw_wd_avg", {})
+    c, p, kw = s["curr"], s["prev"], s["kw"]
     kw_prev_list_mo = s.get("kw_prev") or []
+    kw_prev_map_mo = {k['kw']: k for k in kw_prev_list_mo}
 
-    pct = pdiff(c['spend'], wa['spend'])
-    pct_str = f" MO 광고비 평일일평균({ko(wa['spend'])}) 대비 {pct:+d}%{'  저소진' if pct and pct < 0 else ''}." if pct is not None else ""
+    pct = pdiff(c['spend'], p['spend'])
+    pct_str = f" MO 광고비 {cmp_label}({ko(p['spend'])}) 대비 {pct:+d}%{'  저소진' if pct and pct < 0 else ''}." if pct is not None else ""
     l1 = f"광고비 {ko(c['spend'])}, 전환 {c['conv']}건, CPA {c['cpa']:,}원 — {cpa_vs(c['cpa'], p['cpa'])}.{pct_str}"
 
     # 줄2: 주요 저소진 키워드 (광고비 많은 순으로)
-    under = [(k, pdiff(k['spend'], kwa.get(k['kw'], 0)))
-             for k in sorted(kw, key=lambda x: -x['spend']) if kwa.get(k['kw'], 0) > 0]
+    under = [(k, pdiff(k['spend'], kw_prev_map_mo.get(k['kw'], {}).get('spend', 0)))
+             for k in sorted(kw, key=lambda x: -x['spend']) if kw_prev_map_mo.get(k['kw'], {}).get('spend', 0) > 0]
     under = [(k, p2) for k, p2 in under if p2 is not None and p2 <= -20][:3]
     if under:
-        parts = [f"[{k['kw']}] 광고비 {ko(k['spend'])}, CPA {k['cpa']:,}원 — 평일일평균({ko(kwa[k['kw']])}) 대비 {p2:+d}%" for k, p2 in under[:2]]
+        parts = [f"[{k['kw']}] 광고비 {ko(k['spend'])}, CPA {k['cpa']:,}원 — {cmp_label}({ko(kw_prev_map_mo[k['kw']]['spend'])}) 대비 {p2:+d}%" for k, p2 in under[:2]]
         l2 = " ".join(parts) + "."
     else:
         l2 = "주요 키워드 소진 패턴 큰 변화 없음."
@@ -827,28 +826,26 @@ def generate_comments(cd: dict, is_weekend: bool = False, is_monday: bool = Fals
     else:
         l4 = "당일 전환 발생 키워드 없음."
 
-    # 특이사항: 평일일평균 대비 10만원 이상 감소/과소진 시 키워드 세부 분석
+    # 특이사항: 전일/전주 대비 10만원 이상 감소/과소진 시 키워드 세부 분석
     l_mo_special = None
-    if wa['spend'] > 0 and abs(c['spend'] - wa['spend']) >= 100000:
-        direction = "저소진" if c['spend'] < wa['spend'] else "과소진"
-        kw_diff = [(k, pdiff(k['spend'], kwa.get(k['kw'], 0))) for k in kw if kwa.get(k['kw'], 0) > 0]
+    if p['spend'] > 0 and abs(c['spend'] - p['spend']) >= 100000:
+        direction = "저소진" if c['spend'] < p['spend'] else "과소진"
+        kw_diff = [(k, pdiff(k['spend'], kw_prev_map_mo.get(k['kw'], {}).get('spend', 0))) for k in kw if kw_prev_map_mo.get(k['kw'], {}).get('spend', 0) > 0]
         kw_diff = sorted(kw_diff, key=lambda x: abs(x[1]) if x[1] is not None else 0, reverse=True)[:3]
         parts1 = []
         for k, p2 in kw_diff:
             if p2 is not None:
                 kt = _kw_type(k['kw'])
                 parts1.append(
-                    f"[{k['kw']}]({kt} 키워드) 평일 {ko(kwa[k['kw']])} → 당일 {ko(k['spend'])}({p2:+d}%),"
+                    f"[{k['kw']}]({kt} 키워드) {cmp_label} {ko(kw_prev_map_mo[k['kw']]['spend'])} → 당일 {ko(k['spend'])}({p2:+d}%),"
                     f" 클릭 {k['clk']}회, CPC {k['cpc']:,}원, 전환 {k['conv']}건"
                 )
         if parts1:
-            l_mo_special = f"[특이사항] MO 광고비 평일일평균 대비 {direction}. " + " / ".join(parts1) + "."
-        # 주말: 전주 주말 대비 추가
+            l_mo_special = f"[특이사항] MO 광고비 {cmp_label} 대비 {direction}. " + " / ".join(parts1) + "."
         if is_weekend and kw_prev_list_mo:
-            kw_prev_map = {k['kw']: k for k in kw_prev_list_mo}
             parts2 = []
             for k in sorted(kw, key=lambda x: -x['spend'])[:3]:
-                pk = kw_prev_map.get(k['kw'])
+                pk = kw_prev_map_mo.get(k['kw'])
                 if pk and pk['spend'] > 0:
                     p2 = pdiff(k['spend'], pk['spend'])
                     if p2 is not None and abs(p2) >= 15:
