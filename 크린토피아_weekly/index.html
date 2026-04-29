@@ -119,7 +119,7 @@ tr:hover td{background:#f5f9ff}
   <div><span class="t-title">크린토피아 <span>홈클리닝</span> · Weekly</span><span class="pill">2026년 4월</span></div>
   <div style="display:flex;align-items:center;gap:12px">
     <span class="build-status" id="build-status"><span class="build-spinner"></span>데이터 업데이트 중</span>
-    <div class="t-meta">업데이트: 2026/04/29 16:28</div>
+    <div class="t-meta">업데이트: 2026/04/29 16:30</div>
   </div>
 </div>
 
@@ -545,18 +545,6 @@ function onWeekChange(weekLabel){
   const cmt=allWeeklyComments[weekLabel];
   if(cmt) _setCmt('cmt-sum', cmt.SUMMARY);
 
-  // 서브페이지 동기화
-  _updateSubPage('ppc','npc','npc_kw','네이버 SA · PC',true,true,weekLabel,curr,prev);
-  _updateSubPage('pmo','nmo','nmo_kw','네이버 SA · MO',true,true,weekLabel,curr,prev);
-  _updateSubPage('pgb','gb','gb_kw','구글 SA · 브랜드',false,false,weekLabel,curr,prev);
-  _updateSubPage('pgc','gc','gc_kw','구글 SA · 경쟁사',false,false,weekLabel,curr,prev);
-  _updateSubPage('pgg','gg','gg_kw','구글 SA · 일반',false,false,weekLabel,curr,prev);
-
-  // 서브페이지 드롭다운 동기화
-  ['ppc','pmo','pgb','pgc','pgg'].forEach(pid=>{
-    const sel=document.getElementById(pid+'-week-sel');
-    if(sel) sel.value=weekLabel;
-  });
 }
 
 function _updateSubPage(pageId, dataKey, kwKey, pageLabel, hasRank, isNaver, weekLabel, curr, prev){
@@ -591,28 +579,6 @@ function onSecWeekChange(pageId, weekLabel){
     pgg:{key:'gg', kwKey:'gg_kw', label:'구글 SA · 일반',rank:false,naver:false},
   }[pageId];
   if(cfg) _updateSubPage(pageId,cfg.key,cfg.kwKey,cfg.label,cfg.rank,cfg.naver,weekLabel,curr,prev);
-
-  // 동기화
-  const sumSel=document.getElementById('sum-week-sel');
-  if(sumSel) sumSel.value=weekLabel;
-  ['ppc','pmo','pgb','pgc','pgg'].forEach(pid=>{
-    if(pid===pageId) return;
-    const sel=document.getElementById(pid+'-week-sel');
-    if(sel) sel.value=weekLabel;
-  });
-  // Summary도 업데이트
-  _renderSummaryKpi(curr, prev);
-  _renderCmpTable('sum-n-cmp-tbl', _naverSaTotal(curr), prev?_naverSaTotal(prev):null);
-  _renderCmpTable('sum-g-cmp-tbl', _googleSaTotal(curr), prev?_googleSaTotal(prev):null);
-  const titleEl=document.getElementById('sum-title');
-  if(titleEl){
-    const cmp=prev?` — 전주(${prev.range}) 대비`:'';
-    titleEl.textContent=`${weekLabel} (${curr.range}) 요약${cmp}`;
-  }
-  const rangeEl=document.getElementById('sum-range-label');
-  if(rangeEl) rangeEl.textContent=curr.range;
-  const cmt=allWeeklyComments[weekLabel];
-  if(cmt) _setCmt('cmt-sum', cmt.SUMMARY);
 }
 
 // ── 초기화 ──
