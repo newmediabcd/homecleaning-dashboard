@@ -703,14 +703,19 @@ def generate_comments(cd: dict, is_weekend: bool = False, is_monday: bool = Fals
         return f"{v / 10000:.1f}만원" if v >= 100000 else f"{v:,}원"
 
     def cpa_vs(curr_cpa, prev_cpa):
+        if curr_cpa == 0:
+            return "전환 미발생"
         if prev_cpa == 0:
             return f"{cmp_label} 데이터 없음"
         return f"{cmp_label}({prev_cpa:,}원) 대비 {'개선' if curr_cpa < prev_cpa else '상승'}"
 
     def goal(cpa):
         if cpa == 0:
-            return "전환 0건"
+            return "전환 미발생"
         return f"목표({TARGET_CPA:,}원) {'이내' if cpa <= TARGET_CPA else '초과'}"
+
+    def cpa_disp(conv, cpa):
+        return f"{cpa:,}원" if conv > 0 else "전환 미발생"
 
     def pdiff(curr_v, base_v):
         if not base_v:
@@ -731,7 +736,7 @@ def generate_comments(cd: dict, is_weekend: bool = False, is_monday: bool = Fals
     kw_prev_map_pc = {k['kw']: k for k in kw_prev_list}
 
     # 줄1: KPI + 전일 대비 + 목표
-    l1 = f"광고비 {ko(c['spend'])}, 전환 {c['conv']}건, CPA {c['cpa']:,}원 — {cpa_vs(c['cpa'], p['cpa'])}. {goal(c['cpa'])}."
+    l1 = f"광고비 {ko(c['spend'])}, 전환 {c['conv']}건" + (f", CPA {c['cpa']:,}원 — {cpa_vs(c['cpa'], p['cpa'])}. {goal(c['cpa'])}." if c['conv'] > 0 else " — 전환 미발생.")
 
     # 줄2: 전일/전주 대비 소진 + 저소진 키워드
     pct = pdiff(c['spend'], p['spend'])
@@ -798,7 +803,7 @@ def generate_comments(cd: dict, is_weekend: bool = False, is_monday: bool = Fals
 
     pct = pdiff(c['spend'], p['spend'])
     pct_str = f" MO 광고비 {cmp_label}({ko(p['spend'])}) 대비 {pct:+d}%{'  저소진' if pct and pct < 0 else ''}." if pct is not None else ""
-    l1 = f"광고비 {ko(c['spend'])}, 전환 {c['conv']}건, CPA {c['cpa']:,}원 — {cpa_vs(c['cpa'], p['cpa'])}.{pct_str}"
+    l1 = f"광고비 {ko(c['spend'])}, 전환 {c['conv']}건" + (f", CPA {c['cpa']:,}원 — {cpa_vs(c['cpa'], p['cpa'])}.{pct_str}" if c['conv'] > 0 else f" — 전환 미발생.{pct_str}")
 
     # 줄2: 주요 저소진 키워드 (광고비 많은 순으로)
     under = [(k, pdiff(k['spend'], kw_prev_map_mo.get(k['kw'], {}).get('spend', 0)))
@@ -865,7 +870,7 @@ def generate_comments(cd: dict, is_weekend: bool = False, is_monday: bool = Fals
     s = cd["g_brand"]
     c, p, kw = s["curr"], s["prev"], s["kw"]
 
-    l1 = f"광고비 {ko(c['spend'])}, 전환 {c['conv']}건, CPA {c['cpa']:,}원 — {cpa_vs(c['cpa'], p['cpa'])}. {goal(c['cpa'])}."
+    l1 = f"광고비 {ko(c['spend'])}, 전환 {c['conv']}건" + (f", CPA {c['cpa']:,}원 — {cpa_vs(c['cpa'], p['cpa'])}. {goal(c['cpa'])}." if c['conv'] > 0 else " — 전환 미발생.")
 
     conv_kws = [k for k in kw if k['conv'] > 0]
     zero_kws = [k for k in kw if k['conv'] == 0 and k['spend'] > 0]
@@ -884,7 +889,7 @@ def generate_comments(cd: dict, is_weekend: bool = False, is_monday: bool = Fals
     s = cd["g_comp"]
     c, p, kw = s["curr"], s["prev"], s["kw"]
 
-    l1 = f"광고비 {ko(c['spend'])}, 전환 {c['conv']}건, CPA {c['cpa']:,}원 — {cpa_vs(c['cpa'], p['cpa'])}. {goal(c['cpa'])}."
+    l1 = f"광고비 {ko(c['spend'])}, 전환 {c['conv']}건" + (f", CPA {c['cpa']:,}원 — {cpa_vs(c['cpa'], p['cpa'])}. {goal(c['cpa'])}." if c['conv'] > 0 else " — 전환 미발생.")
 
     conv_kws = sorted([k for k in kw if k['conv'] > 0], key=lambda x: x['cpa'])
     zero_kws = [k for k in kw if k['conv'] == 0 and k['spend'] > 5000]
@@ -908,7 +913,7 @@ def generate_comments(cd: dict, is_weekend: bool = False, is_monday: bool = Fals
     s = cd["g_gen"]
     c, p, kw = s["curr"], s["prev"], s["kw"]
 
-    l1 = f"광고비 {ko(c['spend'])}, 전환 {c['conv']}건, CPA {c['cpa']:,}원 — {cpa_vs(c['cpa'], p['cpa'])}. {goal(c['cpa'])}."
+    l1 = f"광고비 {ko(c['spend'])}, 전환 {c['conv']}건" + (f", CPA {c['cpa']:,}원 — {cpa_vs(c['cpa'], p['cpa'])}. {goal(c['cpa'])}." if c['conv'] > 0 else " — 전환 미발생.")
 
     inefficient = sorted([k for k in kw if k['conv'] == 0 and k['spend'] > 20000], key=lambda x: -x['spend'])
     conv_kws = sorted([k for k in kw if k['conv'] > 0], key=lambda x: x['cpa'])
@@ -929,7 +934,7 @@ def generate_comments(cd: dict, is_weekend: bool = False, is_monday: bool = Fals
 
     def g_cpa_str(curr_cpa, prev_cpa, label):
         if curr_cpa == 0:
-            return f"{label} 전환 0건"
+            return f"{label} 전환 미발생"
         delta = '개선' if curr_cpa < prev_cpa else '상승'
         return f"{label} CPA {curr_cpa:,}원({cmp_label} {prev_cpa:,}원 대비 {delta})"
 
@@ -949,9 +954,9 @@ def generate_comments(cd: dict, is_weekend: bool = False, is_monday: bool = Fals
         if pct_mo_cpa is not None:
             mo_avg_str += f", CPA {cmp_label} 대비 {pct_mo_cpa:+d}%"
         mo_avg_str += "."
-    s1 = (f"네이버 SA PC: 광고비 {ko(npc['curr']['spend'])} / 전환 {npc['curr']['conv']}건 / CPA {npc['curr']['cpa']:,}원"
+    s1 = (f"네이버 SA PC: 광고비 {ko(npc['curr']['spend'])} / 전환 {npc['curr']['conv']}건 / CPA {cpa_disp(npc['curr']['conv'], npc['curr']['cpa'])}"
           f" — {cpa_vs(npc['curr']['cpa'], npc['prev']['cpa'])}." + pc_avg_str)
-    s2 = (f"네이버 SA MO: 광고비 {ko(nmo['curr']['spend'])} / 전환 {nmo['curr']['conv']}건 / CPA {nmo['curr']['cpa']:,}원"
+    s2 = (f"네이버 SA MO: 광고비 {ko(nmo['curr']['spend'])} / 전환 {nmo['curr']['conv']}건 / CPA {cpa_disp(nmo['curr']['conv'], nmo['curr']['cpa'])}"
           f" — {cpa_vs(nmo['curr']['cpa'], nmo['prev']['cpa'])}." + mo_avg_str)
 
     # 줄3·4: 네이버 SA PC / MO 주요 소진 변화 키워드 (매체별 분리)

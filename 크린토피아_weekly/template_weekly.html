@@ -426,7 +426,7 @@ function _renderCmpTable(tbodyId, curr, prev){
 
 // ── 키워드 표 ──
 function _kwRow(k, pk){
-  const cpaHtml=k.conv>0?k.cpa.toLocaleString():'—';
+  const cpaHtml=k.conv>0?k.cpa.toLocaleString():'전환 미발생';
   const cpaSt=k.conv>0&&k.cpa>TARGET_CPA*3?' style="color:var(--rd)"':k.conv>0&&k.cpa>TARGET_CPA?' style="color:#b06d10"':'';
   function d(key,rev){
     if(!pk) return '<td class="dc">—</td>';

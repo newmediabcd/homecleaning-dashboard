@@ -808,11 +808,11 @@ function onDateChange(selectedDate){
     const gAgg=_aggKpi(wkDates,"g");
     document.getElementById("kpi-n-spend").textContent=_fmtSpend(nSpend);
     document.getElementById("kpi-n-cpc").textContent=nCpc.toLocaleString()+"원";
-    document.getElementById("kpi-n-cpa").textContent=nCpa.toLocaleString()+"원";
+    document.getElementById("kpi-n-cpa").textContent=nConv>0?nCpa.toLocaleString()+"원":"전환 미발생";
     document.getElementById("kpi-n-cvr").textContent=nCvr+"%";
     document.getElementById("kpi-g-spend").textContent=_fmtSpend(gAgg.spend);
     document.getElementById("kpi-g-cpc").textContent=gAgg.cpc.toLocaleString()+"원";
-    document.getElementById("kpi-g-cpa").textContent=gAgg.cpa.toLocaleString()+"원";
+    document.getElementById("kpi-g-cpa").textContent=gAgg.conv>0?gAgg.cpa.toLocaleString()+"원":"전환 미발생";
     document.getElementById("kpi-g-cvr").textContent=gAgg.cvr+"%";
     const prevWkSum = _prevWeekendDates(selectedDate);
     const wkLbl = "전주 주말";
@@ -849,11 +849,11 @@ function onDateChange(selectedDate){
     const prevNCvr=prevNCvrClk>0?(prevNCvrConv/prevNCvrClk*100).toFixed(2):0;
     document.getElementById("kpi-n-spend").textContent = _fmtSpend(curr.n_spend);
     document.getElementById("kpi-n-cpc").textContent   = (curr.n_cpc||0).toLocaleString()+"원";
-    document.getElementById("kpi-n-cpa").textContent   = curr.n_cpa.toLocaleString()+"원";
+    document.getElementById("kpi-n-cpa").textContent   = nCvrConv>0?curr.n_cpa.toLocaleString()+"원":"전환 미발생";
     document.getElementById("kpi-n-cvr").textContent   = nCvr+"%";
     document.getElementById("kpi-g-spend").textContent = _fmtSpend(curr.g_spend);
     document.getElementById("kpi-g-cpc").textContent   = (curr.g_cpc||0).toLocaleString()+"원";
-    document.getElementById("kpi-g-cpa").textContent   = curr.g_cpa.toLocaleString()+"원";
+    document.getElementById("kpi-g-cpa").textContent   = curr.g_conv>0?curr.g_cpa.toLocaleString()+"원":"전환 미발생";
     document.getElementById("kpi-g-cvr").textContent   = (curr.g_cvr||0)+"%";
     const bdgLbl = isMon ? "전주 월요일" : undefined;
     [["kpi-n-spend-badge",_diffBadge(curr.n_spend,prev&&prev.n_spend,false,bdgLbl)],
@@ -1056,7 +1056,7 @@ function _kwBadge(conv, cpa){
   return '<span class="bg bdn">CPA 높음</span>';
 }
 function _kwRow(k){
-  const cpaHtml = k.conv > 0 ? k.cpa.toLocaleString() : '—';
+  const cpaHtml = k.conv > 0 ? k.cpa.toLocaleString() : '전환 미발생';
   const cpaStyle = k.conv > 0 && k.cpa > _TARGET_CPA*3 ? ' style="color:var(--rd)"'
                  : k.conv > 0 && k.cpa > _TARGET_CPA ? ' style="color:#b06d10"' : '';
   return `<tr><td>[${k.kw}]</td><td class="r">${k.imp?k.imp.toLocaleString():'—'}</td>`
