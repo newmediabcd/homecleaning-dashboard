@@ -28,7 +28,7 @@ jobs:
         run: pip install pandas numpy
 
       - name: Build dashboard
-        run: python -X utf8 build_dashboard.py
+        run: cd 크린토피아_daily && python -X utf8 build_dashboard.py
 
       - uses: actions/configure-pages@v4
 
