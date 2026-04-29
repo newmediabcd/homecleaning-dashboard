@@ -66,6 +66,8 @@ body{font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo','Malgun Gothic
 .ks.ku{background:var(--badge-ok-bg);color:var(--badge-ok-tx)}
 .ks.kd{background:var(--badge-bad-bg);color:var(--badge-bad-tx)}
 .ks.kn{background:var(--badge-neu-bg);color:var(--badge-neu-tx)}
+.ks.kr{background:var(--rdb);color:var(--rd)}
+.ks.kb{background:var(--blb);color:var(--bl)}
 .kg-label{font-size:12px;font-weight:700;color:var(--bl);margin-bottom:.35rem;padding-left:2px}
 
 /* SEC LABEL */
@@ -119,7 +121,7 @@ tr:hover td{background:#f5f9ff}
   <div><span class="t-title">크린토피아 <span>홈클리닝</span> · Weekly</span><span class="pill">2026년 4월</span></div>
   <div style="display:flex;align-items:center;gap:12px">
     <span class="build-status" id="build-status"><span class="build-spinner"></span>데이터 업데이트 중</span>
-    <div class="t-meta">업데이트: 2026/04/29 16:32</div>
+    <div class="t-meta">업데이트: 2026/04/29 16:38</div>
   </div>
 </div>
 
@@ -296,22 +298,22 @@ function _diffBadge(curr, prev, reverse){
   const pct=Math.round((curr-prev)/prev*100);
   const sign=pct>=0?'+':'';
   if(reverse){
-    const cls=curr<prev?'ku':'kd';
+    const cls=curr<prev?'kb':'kr';
     const lbl=curr<prev?'개선':'상승';
     const pv=prev>9999?_fmtSpend(prev):(prev.toLocaleString()+'원');
     return {text:`전주(${pv}) 대비 ${lbl}`,cls};
   }
-  return {text:`전주(${_fmtSpend(prev)}) 대비 ${sign}${pct}%`,cls:pct<0?'ku':'kd'};
+  return {text:`전주(${_fmtSpend(prev)}) 대비 ${sign}${pct}%`,cls:pct>0?'kr':pct<0?'kb':'kn'};
 }
 function _cvrBadge(curr,prev){
   if(!prev) return {text:'전주 데이터 없음',cls:'kn'};
   const lbl=curr>prev?'상승':'하락';
-  return {text:`전주(${prev}%) 대비 ${lbl}`,cls:curr>prev?'kd':'ku'};
+  return {text:`전주(${prev}%) 대비 ${lbl}`,cls:curr>prev?'kr':'kb'};
 }
 function _convBadge(curr,prev){
   if(prev===null||prev===undefined) return {text:'전주 데이터 없음',cls:'kn'};
-  if(curr>prev) return {text:`전주(${prev}건) 대비 증가`,cls:'ku'};
-  if(curr<prev) return {text:`전주(${prev}건) 대비 감소`,cls:'kd'};
+  if(curr>prev) return {text:`전주(${prev}건) 대비 증가`,cls:'kr'};
+  if(curr<prev) return {text:`전주(${prev}건) 대비 감소`,cls:'kb'};
   return {text:`전주(${prev}건) 동일`,cls:'kn'};
 }
 function _setBadge(id, b){
@@ -414,8 +416,7 @@ function _renderCmpTable(tbodyId, curr, prev){
     const cv=curr[m.key]||0, pv=prev?(prev[m.key]||0):0;
     if(!prev||pv===0) return '<td style="color:var(--tx3);text-align:center;background:#f0f2f5">—</td>';
     const pct=Math.round((cv-pv)/pv*100), sign=pct>=0?'+':'';
-    const good=m.rev?pct<0:pct>0, bad=m.rev?pct>0:pct<0;
-    const col=good?'color:var(--gn)':bad?'color:var(--rd)':'color:var(--tx3)';
+    const col=pct>0?'color:var(--rd)':pct<0?'color:var(--bl)':'color:var(--tx3)';
     return `<td style="${col};font-weight:700;text-align:center;background:#f0f2f5">${sign}${pct}%</td>`;
   }).join('');
   tb.innerHTML=
@@ -434,8 +435,7 @@ function _kwRow(k, pk){
     if(pv==null||pv===0||cv==null) return '<td class="dc">—</td>';
     const pct=Math.round((cv-pv)/pv*100);
     if(pct===0) return '<td class="dc" style="color:var(--tx3)">±0%</td>';
-    const good=rev?(pct<0):(pct>0);
-    const col=good?'var(--gn)':'var(--rd)';
+    const col=pct>0?'var(--rd)':'var(--bl)';
     return `<td class="dc" style="color:${col};font-weight:700">${pct>0?'▲':'▼'}${Math.abs(pct)}%</td>`;
   }
   return `<tr><td class="l">[${k.kw}]</td>
