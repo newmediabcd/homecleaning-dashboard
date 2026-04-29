@@ -481,8 +481,9 @@ function _setCmt(id, txt){
   const el=document.getElementById(id);
   if(!el) return;
   if(!txt){el.innerHTML='<div class="ins-i">—</div>';return;}
+  const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const lines=txt.split('\n').filter(l=>l.trim());
-  el.innerHTML=lines.map(l=>`<div class="ins-i">${l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`).join('');
+  el.innerHTML=lines.map(l=>`<div class="ins-i">${l.split('||').map(esc).join('<br>')}</div>`).join('');
 }
 
 // ── Summary KPI ──

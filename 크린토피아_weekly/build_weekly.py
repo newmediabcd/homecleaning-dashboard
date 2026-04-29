@@ -357,7 +357,7 @@ def generate_weekly_comment(wk: dict, prev: dict | None) -> dict:
             selected = sorted(selected, key=lambda x: -x["conv"])[:4]
             kw_lines = [f"  {_kw_type(k['kw'])}) [{k['kw']}] 전환 {k['conv']}건 / CPA {k['cpa']:,}원"
                         for k in selected]
-            lines.append("전환 상위 키워드\n" + "\n".join(kw_lines))
+            lines.append("전환 상위 키워드||" + "||".join(kw_lines))
         else:
             lines.append("전환 상위 키워드: 해당 없음 (전환 미발생).")
         # 줄3: 광고비 상위 키워드 (5개, 줄바꿈)
@@ -369,7 +369,7 @@ def generate_weekly_comment(wk: dict, prev: dict | None) -> dict:
                 type_tag = f"({kt})" if kt != "메인" else ""
                 perf = f"전환 {k['conv']}건 / CPA {k['cpa']:,}원" if k["conv"] > 0 else "전환 미발생"
                 kw_lines.append(f"  {i}. [{k['kw']}]{type_tag} {_fmt(k['spend'])} / {perf}")
-            lines.append("광고비 상위 키워드\n" + "\n".join(kw_lines))
+            lines.append("광고비 상위 키워드||" + "||".join(kw_lines))
         return "\n".join(lines)
 
     sections["N_PC"]    = ch(wk["npc"], prev["npc"] if hp else None, wk.get("npc_kw", []))
