@@ -255,17 +255,22 @@ tr.twknd:hover td{background:rgba(254,243,199,0.7)}
   </div>
 
   <!-- 일자별 매체별 상세 표 -->
-  <div class="sec">네이버 SA · PC 일자별 성과 (최근 7일)</div>
-  <div class="tw"><table>
-    <thead><tr><th>일자</th><th class="r">노출</th><th class="r">클릭</th><th class="r">광고비</th><th class="r">CTR</th><th class="r">CPC</th><th class="r">전환</th><th class="r">CVR</th><th class="r">CPA</th><th class="r">노출순위</th></tr></thead>
-    <tbody id="sum-tbl-npc">{{TABLE_N_PC_SUMMARY}}</tbody>
-  </table></div>
-
-  <div class="sec">네이버 SA · MO 일자별 성과 (최근 7일)</div>
-  <div class="tw"><table>
-    <thead><tr><th>일자</th><th class="r">노출</th><th class="r">클릭</th><th class="r">광고비</th><th class="r">CTR</th><th class="r">CPC</th><th class="r">전환</th><th class="r">CVR</th><th class="r">CPA</th><th class="r">노출순위</th></tr></thead>
-    <tbody id="sum-tbl-nmo">{{TABLE_N_MO_SUMMARY}}</tbody>
-  </table></div>
+  <div style="display:flex;gap:12px;align-items:flex-start">
+    <div style="flex:1;min-width:0">
+      <div class="sec" style="margin-top:.6rem">네이버 SA · PC 일자별 성과 (최근 7일)</div>
+      <div class="tw" style="font-size:11px"><table>
+        <thead><tr><th>일자</th><th class="r">노출</th><th class="r">클릭</th><th class="r">광고비</th><th class="r">CTR</th><th class="r">CPC</th><th class="r">전환</th><th class="r">CVR</th><th class="r">CPA</th><th class="r">노출순위</th></tr></thead>
+        <tbody id="sum-tbl-npc">{{TABLE_N_PC_SUMMARY}}</tbody>
+      </table></div>
+    </div>
+    <div style="flex:1;min-width:0">
+      <div class="sec" style="margin-top:.6rem">네이버 SA · MO 일자별 성과 (최근 7일)</div>
+      <div class="tw" style="font-size:11px"><table>
+        <thead><tr><th>일자</th><th class="r">노출</th><th class="r">클릭</th><th class="r">광고비</th><th class="r">CTR</th><th class="r">CPC</th><th class="r">전환</th><th class="r">CVR</th><th class="r">CPA</th><th class="r">노출순위</th></tr></thead>
+        <tbody id="sum-tbl-nmo">{{TABLE_N_MO_SUMMARY}}</tbody>
+      </table></div>
+    </div>
+  </div>
 
   <div class="sec">구글 SA 일자별 성과 (최근 7일)</div>
   <div class="tw"><table>
