@@ -726,10 +726,13 @@ function _buildSummaryCharts(currDate, wkDates){
   const nCpa  = win7.map(d=>allDailyKpi[d].n_cpa>0?allDailyKpi[d].n_cpa:null);
   const gConv = win7.map(d=>allDailyKpi[d].g_conv);
   const gCpa  = win7.map(d=>allDailyKpi[d].g_cpa>0?allDailyKpi[d].g_cpa:null);
+  const _sMax = (a,b)=>{const v=[...a,...b].filter(x=>x!=null&&x>0);return v.length?Math.max(...v):undefined;};
+  const cvYMax  = _sMax(nConv,gConv);
+  const cpaYMax = _sMax(nCpa,gCpa);
   const cOpts = (barC,lineC)=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
     x:{grid:{color:gc},ticks:{color:tc,font:{size:11}}},
-    y:{grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>v+"건"},position:"left"},
-    y2:{grid:{display:false},ticks:{color:lineC,font:{size:11},callback:v=>Math.round(v/10000)+"만"},position:"right"}
+    y:{suggestedMax:cvYMax,grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>v+"건"},position:"left"},
+    y2:{suggestedMax:cpaYMax,grid:{display:false},ticks:{color:lineC,font:{size:11},callback:v=>Math.round(v/10000)+"만"},position:"right"}
   }});
   const mkDs = (conv,cpa,barC,lineC)=>({type:"bar",data:{labels:win7,datasets:[
     {data:conv,backgroundColor:barC,borderRadius:3,yAxisID:"y",order:2},
