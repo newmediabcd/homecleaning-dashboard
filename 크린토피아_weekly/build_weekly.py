@@ -272,6 +272,18 @@ def _fmt(v: float) -> str:
 def _pct(curr, prev):
     return round((curr-prev)/prev*100) if prev and prev != 0 else None
 
+_LOCAL_WORDS = [
+    "서울","부산","대구","인천","광주","대전","울산","세종",
+    "강남","강서","강북","강동","마포","송파","관악","서초","노원","은평","동작","성북","종로","중구","용산",
+    "수원","성남","고양","용인","창원","청주","전주","천안","안산","남양주","화성","안양","부천",
+    "평택","의정부","시흥","하남","광명","군포","오산","이천","경기","강원",
+    "충북","충남","전북","전남","경북","경남","제주",
+]
+def _kw_type(kw: str) -> str:
+    if "크린토피아" in kw: return "브랜드"
+    if any(loc in kw for loc in _LOCAL_WORDS): return "지역"
+    return "메인"
+
 
 def generate_weekly_comment(wk: dict, prev: dict | None) -> dict:
     hp = prev is not None
@@ -319,22 +331,44 @@ def generate_weekly_comment(wk: dict, prev: dict | None) -> dict:
     sections["SUMMARY"] = "\n".join(lines)
 
     # ── 채널별 ──
-    def ch(curr, pv, label=""):
-        goal = ""
-        if curr["cpa"] > 0:
-            goal = f" (목표{'이내' if curr['cpa']<=TARGET_CPA else '초과'})"
-        base = f"광고비 {_fmt(curr['spend'])}, 전환 {curr['conv']}건, CPA {curr['cpa']:,}원{goal}"
+    def ch(curr, pv, kws):
+        lines = []
+        # 줄1: KPI 요약
+        goal_s = f" (목표{'이내' if curr['cpa']<=TARGET_CPA else '초과'})" if curr["cpa"] > 0 else ""
+        cpa_s = f"{curr['cpa']:,}원{goal_s}" if curr["conv"] > 0 else "전환 미발생"
+        base = f"광고비 {_fmt(curr['spend'])}, 전환 {curr['conv']}건, CPA {cpa_s}"
         if pv:
-            sb=sbadge(curr["spend"],pv["spend"]); cb=cbadge(curr["cpa"],pv["cpa"])
-            suffix=" — "+("; ".join(x for x in [sb,cb] if x)) if (sb or cb) else ""
-            return base + suffix + "."
-        return base + "."
+            sb = sbadge(curr["spend"], pv["spend"])
+            cb = cbadge(curr["cpa"], pv["cpa"]) if curr["conv"] > 0 else ""
+            suffix = " — " + "; ".join(x for x in [sb, cb] if x) if (sb or cb) else ""
+            lines.append(base + suffix + ".")
+        else:
+            lines.append(base + ".")
+        # 줄2: 최다 전환 키워드
+        conv_kws = sorted([k for k in kws if k["conv"] > 0], key=lambda x: -x["conv"])
+        if conv_kws:
+            top = conv_kws[0]
+            kt = _kw_type(top["kw"])
+            lines.append(f"최다 전환 키워드: [{top['kw']}]({kt}) 전환 {top['conv']}건, CPA {top['cpa']:,}원.")
+        else:
+            lines.append("최다 전환 키워드: 해당 없음 (전환 미발생).")
+        # 줄3: 광고비 상위 5개
+        top5 = sorted(kws, key=lambda x: -x["spend"])[:5]
+        if top5:
+            parts = []
+            for k in top5:
+                kt = _kw_type(k["kw"])
+                type_tag = f"({kt})" if kt != "메인" else ""
+                perf = f"전환 {k['conv']}건 CPA {k['cpa']:,}원" if k["conv"] > 0 else "전환 미발생"
+                parts.append(f"[{k['kw']}]{type_tag} {_fmt(k['spend'])} / {perf}")
+            lines.append("광고비 상위 5: " + ", ".join(parts) + ".")
+        return "\n".join(lines)
 
-    sections["N_PC"]    = ch(wk["npc"], prev["npc"] if hp else None)
-    sections["N_MO"]    = ch(wk["nmo"], prev["nmo"] if hp else None)
-    sections["G_BRAND"] = ch(wk["gb"],  prev["gb"]  if hp else None)
-    sections["G_COMP"]  = ch(wk["gc"],  prev["gc"]  if hp else None)
-    sections["G_GEN"]   = ch(wk["gg"],  prev["gg"]  if hp else None)
+    sections["N_PC"]    = ch(wk["npc"], prev["npc"] if hp else None, wk.get("npc_kw", []))
+    sections["N_MO"]    = ch(wk["nmo"], prev["nmo"] if hp else None, wk.get("nmo_kw", []))
+    sections["G_BRAND"] = ch(wk["gb"],  prev["gb"]  if hp else None, wk.get("gb_kw",  []))
+    sections["G_COMP"]  = ch(wk["gc"],  prev["gc"]  if hp else None, wk.get("gc_kw",  []))
+    sections["G_GEN"]   = ch(wk["gg"],  prev["gg"]  if hp else None, wk.get("gg_kw",  []))
 
     # ── 자동입찰 ──
     al = []
