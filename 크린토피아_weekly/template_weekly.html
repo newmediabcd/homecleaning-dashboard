@@ -433,10 +433,10 @@ function _kwRow(k, pk){
     const cv=k[key], pv=pk[key];
     if(pv==null||pv===0||cv==null) return '';
     const pct=Math.round((cv-pv)/pv*100);
-    if(pct===0) return '<br><span style="font-size:10px;color:var(--tx3)">±0%</span>';
+    if(pct===0) return ' <span style="font-size:10px;color:var(--tx3)">±0%</span>';
     const good=rev?(pct<0):(pct>0);
     const col=good?'var(--gn)':'var(--rd)';
-    return `<br><span style="font-size:10px;color:${col};font-weight:700">${pct>0?'▲':'▼'}${Math.abs(pct)}%</span>`;
+    return ` <span style="font-size:10px;color:${col};font-weight:700">${pct>0?'▲':'▼'}${Math.abs(pct)}%</span>`;
   }
   return `<tr><td class="l">[${k.kw}]</td>
     <td>${k.imp?k.imp.toLocaleString():'—'}${d('imp',false)}</td>
