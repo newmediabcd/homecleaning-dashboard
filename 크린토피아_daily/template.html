@@ -489,52 +489,36 @@ const nColP={{JS_NCOLP}};
 const gColP={{JS_GCOLP}};
 const _charts = {};
 
-function mkBarLine(id,barData,lineData,barColor,lineColor,yLabel,y2Fmt){
+function mkBarLine(id,barData,lineData,barColor,lineColor,yLabel,y2Fmt,yMax,y2Max){
   _charts[id] = new Chart(id,{type:"bar",data:{labels:PL,datasets:[
     {data:barData,backgroundColor:barColor,borderRadius:3,yAxisID:"y",order:2},
     {data:lineData,type:"line",borderColor:lineColor,backgroundColor:"transparent",tension:.3,pointRadius:4,pointBackgroundColor:"#fff",pointBorderWidth:2,yAxisID:"y2",order:1,spanGaps:false}
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
     x:{grid:{color:gc},ticks:{color:tc,font:{size:10},maxRotation:45}},
-    y:{grid:{color:gc},ticks:{color:tc,font:{size:10},callback:v=>v+yLabel},position:"left"},
-    y2:{grid:{display:false},ticks:{color:lineColor,font:{size:10},callback:v=>y2Fmt(v)},position:"right"}
+    y:{suggestedMax:yMax,grid:{color:gc},ticks:{color:tc,font:{size:10},callback:v=>v+yLabel},position:"left"},
+    y2:{suggestedMax:y2Max,grid:{display:false},ticks:{color:lineColor,font:{size:10},callback:v=>y2Fmt(v)},position:"right"}
   }}});
 }
 
-// 네이버 SA — 전환수 + CPA
-mkBarLine("cn_cv",
-  {{BAR_CN_CV}},
-  {{LINE_CN_CV}},
-  nColP,"rgba(217,64,64,0.85)","건",v=>Math.round(v/10000)+"만");
+function _pairMax(a,b){const v=[...a,...b].filter(x=>x!=null&&x>0);return v.length?Math.max(...v):undefined;}
 
-// 네이버 SA — 접수완료 + CAC (4/15 null)
-mkBarLine("cn_recv",
-  {{BAR_CN_RECV}},
-  {{LINE_CN_RECV}},
-  nColP,"rgba(176,109,16,0.85)","건",v=>Math.round(v/10000)+"만");
+// 네이버/구글 SA — 전환수 + CPA (공통 Y축)
+const _cv_yMax=_pairMax({{BAR_CN_CV}},{{BAR_CG_CV}});
+const _cv_y2Max=_pairMax({{LINE_CN_CV}},{{LINE_CG_CV}});
+mkBarLine("cn_cv",{{BAR_CN_CV}},{{LINE_CN_CV}},nColP,"rgba(217,64,64,0.85)","건",v=>Math.round(v/10000)+"만",_cv_yMax,_cv_y2Max);
+mkBarLine("cg_cv",{{BAR_CG_CV}},{{LINE_CG_CV}},gColP,"rgba(217,64,64,0.85)","건",v=>Math.round(v/10000)+"만",_cv_yMax,_cv_y2Max);
 
-// 네이버 SA — GA 예약완료 + 완료율
-mkBarLine("cn_ga",
-  {{BAR_CN_GA}},
-  {{LINE_CN_GA}},
-  nColP,"rgba(217,64,64,0.85)","건",v=>v+"%");
+// 네이버/구글 SA — 접수완료 + CAC (공통 Y축)
+const _recv_yMax=_pairMax({{BAR_CN_RECV}},{{BAR_CG_RECV}});
+const _recv_y2Max=_pairMax({{LINE_CN_RECV}},{{LINE_CG_RECV}});
+mkBarLine("cn_recv",{{BAR_CN_RECV}},{{LINE_CN_RECV}},nColP,"rgba(176,109,16,0.85)","건",v=>Math.round(v/10000)+"만",_recv_yMax,_recv_y2Max);
+mkBarLine("cg_recv",{{BAR_CG_RECV}},{{LINE_CG_RECV}},gColP,"rgba(176,109,16,0.85)","건",v=>Math.round(v/10000)+"만",_recv_yMax,_recv_y2Max);
 
-// 구글 SA — 전환수 + CPA
-mkBarLine("cg_cv",
-  {{BAR_CG_CV}},
-  {{LINE_CG_CV}},
-  gColP,"rgba(217,64,64,0.85)","건",v=>Math.round(v/10000)+"만");
-
-// 구글 SA — 접수완료 + CAC (4/15 null)
-mkBarLine("cg_recv",
-  {{BAR_CG_RECV}},
-  {{LINE_CG_RECV}},
-  gColP,"rgba(176,109,16,0.85)","건",v=>Math.round(v/10000)+"만");
-
-// 구글 SA — GA 예약완료 + 완료율
-mkBarLine("cg_ga",
-  {{BAR_CG_GA}},
-  {{LINE_CG_GA}},
-  gColP,"rgba(217,64,64,0.85)","건",v=>v+"%");
+// 네이버/구글 SA — GA 예약완료 + 완료율 (공통 Y축)
+const _ga_yMax=_pairMax({{BAR_CN_GA}},{{BAR_CG_GA}});
+const _ga_y2Max=_pairMax({{LINE_CN_GA}},{{LINE_CG_GA}});
+mkBarLine("cn_ga",{{BAR_CN_GA}},{{LINE_CN_GA}},nColP,"rgba(217,64,64,0.85)","건",v=>v+"%",_ga_yMax,_ga_y2Max);
+mkBarLine("cg_ga",{{BAR_CG_GA}},{{LINE_CG_GA}},gColP,"rgba(217,64,64,0.85)","건",v=>v+"%",_ga_yMax,_ga_y2Max);
 
 function show(id,btn){
   document.querySelectorAll(".pg").forEach(p=>p.classList.remove("active"));
