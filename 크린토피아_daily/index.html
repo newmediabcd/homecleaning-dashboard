@@ -150,8 +150,8 @@ tr.twknd:hover td{background:rgba(254,243,199,0.7)}
 <div class="topbar">
   <div><span class="t-title">크린토피아 <span>홈클리닝</span> · Daily</span><span class="pill">데이터 기준 : 04/01~04/28</span></div>
   <div style="display:flex;align-items:center;gap:12px">
-    <span class="build-status" id="build-status"><span class="build-spinner"></span>데이터 업데이트 중<span class="build-time" id="build-time"></span></span>
-    <div class="t-meta">업데이트: 2026/04/29 16:03</div>
+    <span class="build-status hidden" id="build-status"><span class="build-spinner"></span>데이터 업데이트 중<span class="build-time" id="build-time"></span></span>
+    <div class="t-meta">업데이트: 2026/04/29 16:49</div>
   </div>
 </div>
 <div class="nav">
@@ -1386,7 +1386,7 @@ document.querySelectorAll(".ins-i").forEach(el=>{
     fetch(API, {headers: headers})
       .then(function(r){
         if(r.status === 304){ _processRuns(_lastRuns); return null; }
-        if(r.status !== 200) return null; // rate limit 등 비정상 응답 → 현재 상태 유지
+        if(r.status !== 200){ _processRuns([]); return null; } // rate limit 등 비정상 응답 → 숨김
         var et = r.headers.get('ETag');
         if(et) _etag = et;
         return r.json();
