@@ -132,7 +132,7 @@ tr:hover td{background:#f5f9ff}
   <div><span class="t-title">크린토피아 <span>홈클리닝</span> · Weekly</span><span class="pill">2026년 4월</span></div>
   <div style="display:flex;align-items:center;gap:12px">
     <span class="build-status hidden" id="build-status"><span class="build-spinner"></span>데이터 업데이트 중</span>
-    <div class="t-meta">업데이트: 2026/04/29 17:26</div>
+    <div class="t-meta">업데이트: 2026/04/29 17:29</div>
   </div>
 </div>
 
@@ -406,7 +406,8 @@ function _googleSaTotal(wk){
 }
 
 // ── 이번주 vs 전주 비교 표 (행=이번주·전주·증감, 열=지표) ──
-function _renderCmpTable(tbodyId, curr, prev){
+function _renderCmpTable(tbodyId, curr, prev, thisWeekColor){
+  thisWeekColor=thisWeekColor||'var(--blt)';
   const tb=document.getElementById(tbodyId);
   if(!tb) return;
   const M=[
@@ -432,7 +433,7 @@ function _renderCmpTable(tbodyId, curr, prev){
   }).join('');
   tb.innerHTML=
     `<tr><td style="text-align:center;font-weight:600;color:var(--tx3);white-space:nowrap">전주</td>${prevCells}</tr>`+
-    `<tr><td style="text-align:center;font-weight:700;color:var(--blt);white-space:nowrap">이번주</td>${currCells}</tr>`+
+    `<tr><td style="text-align:center;font-weight:700;color:${thisWeekColor};white-space:nowrap">이번주</td>${currCells}</tr>`+
     `<tr style="background:#f0f2f5"><td style="text-align:center;font-weight:600;color:var(--tx2);white-space:nowrap;background:#f0f2f5">증감</td>${pctCells}</tr>`;
 }
 
@@ -549,8 +550,8 @@ function onWeekChange(weekLabel){
   _renderSummaryKpi(curr, prev);
 
   // 이번주 vs 전주 비교 표
-  _renderCmpTable('sum-n-cmp-tbl', _naverSaTotal(curr), prev?_naverSaTotal(prev):null);
-  _renderCmpTable('sum-g-cmp-tbl', _googleSaTotal(curr), prev?_googleSaTotal(prev):null);
+  _renderCmpTable('sum-n-cmp-tbl', _naverSaTotal(curr), prev?_naverSaTotal(prev):null, '#1a1a18');
+  _renderCmpTable('sum-g-cmp-tbl', _googleSaTotal(curr), prev?_googleSaTotal(prev):null, '#1a1a18');
 
   // Summary comment
   const cmt=allWeeklyComments[weekLabel];
@@ -565,7 +566,8 @@ function _updateSubPage(pageId, dataKey, kwKey, pageLabel, hasRank, isNaver, wee
     r.textContent=`${curr.range}${cmp}`;
   }
   _renderKpiGrid(pageId+'-kg', _pageCards(curr,prev,dataKey));
-  _renderCmpTable(pageId+'-cmp-tbl', curr[dataKey]||{}, prev?(prev[dataKey]||null):null);
+  const _cmpColor=isNaver?'var(--gnt)':'var(--blt)';
+  _renderCmpTable(pageId+'-cmp-tbl', curr[dataKey]||{}, prev?(prev[dataKey]||null):null, _cmpColor);
   const kwData=curr[kwKey]||[];
   const prevKwData=prev?(prev[kwKey]||[]):[];
   if(isNaver) _renderNaverKwTables(pageId, kwData, weekLabel, prevKwData);
