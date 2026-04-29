@@ -936,21 +936,21 @@ def generate_comments(cd: dict, is_weekend: bool = False, is_monday: bool = Fals
         delta = '개선' if curr_cpa < prev_cpa else '상승'
         return f"{label} CPA {curr_cpa:,}원({cmp_label} {prev_cpa:,}원 대비 {delta})"
 
-    pct_pc      = pdiff(npc["curr"]["spend"], npc["wd_avg"]["spend"])
-    pct_pc_cpa  = pdiff(npc["curr"]["cpa"],   npc["wd_avg"]["cpa"])
-    pct_mo      = pdiff(nmo["curr"]["spend"], nmo["wd_avg"]["spend"])
-    pct_mo_cpa  = pdiff(nmo["curr"]["cpa"],   nmo["wd_avg"]["cpa"])
+    pct_pc      = pdiff(npc["curr"]["spend"], npc["prev"]["spend"])
+    pct_pc_cpa  = pdiff(npc["curr"]["cpa"],   npc["prev"]["cpa"])
+    pct_mo      = pdiff(nmo["curr"]["spend"], nmo["prev"]["spend"])
+    pct_mo_cpa  = pdiff(nmo["curr"]["cpa"],   nmo["prev"]["cpa"])
     pc_avg_str = ""
     if pct_pc is not None:
-        pc_avg_str = f" 광고비 평일일평균 대비 {pct_pc:+d}%"
+        pc_avg_str = f" 광고비 {cmp_label} 대비 {pct_pc:+d}%"
         if pct_pc_cpa is not None:
-            pc_avg_str += f", CPA 평일일평균 대비 {pct_pc_cpa:+d}%"
+            pc_avg_str += f", CPA {cmp_label} 대비 {pct_pc_cpa:+d}%"
         pc_avg_str += "."
     mo_avg_str = ""
     if pct_mo is not None:
-        mo_avg_str = f" 광고비 평일일평균 대비 {pct_mo:+d}%"
+        mo_avg_str = f" 광고비 {cmp_label} 대비 {pct_mo:+d}%"
         if pct_mo_cpa is not None:
-            mo_avg_str += f", CPA 평일일평균 대비 {pct_mo_cpa:+d}%"
+            mo_avg_str += f", CPA {cmp_label} 대비 {pct_mo_cpa:+d}%"
         mo_avg_str += "."
     s1 = (f"네이버 SA PC: 광고비 {ko(npc['curr']['spend'])} / 전환 {npc['curr']['conv']}건 / CPA {npc['curr']['cpa']:,}원"
           f" — {cpa_vs(npc['curr']['cpa'], npc['prev']['cpa'])}." + pc_avg_str)
