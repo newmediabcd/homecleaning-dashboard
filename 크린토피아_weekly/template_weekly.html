@@ -595,6 +595,8 @@ function onSecWeekChange(pageId, weekLabel){
     sel.value=last;
   });
   onWeekChange(last);
+  // 서브페이지 초기 로드 (각 페이지 독립 — 이후 변경은 각자 selector로만)
+  ['ppc','pmo','pgb','pgc','pgg'].forEach(pid=>onSecWeekChange(pid,last));
 })();
 </script>
 
