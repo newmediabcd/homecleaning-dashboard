@@ -135,7 +135,7 @@ tr:hover td{background:#f5f9ff}
   <div><span class="t-title">크린토피아 <span>홈클리닝</span> · Weekly</span><span class="pill">2026년 4월</span></div>
   <div style="display:flex;align-items:center;gap:12px">
     <span class="build-status hidden" id="build-status"><span class="build-spinner"></span>데이터 업데이트 중</span>
-    <div class="t-meta">업데이트: 2026/04/30 11:55</div>
+    <div class="t-meta">업데이트: 2026/04/30 12:01</div>
   </div>
 </div>
 
@@ -564,13 +564,30 @@ function _mergeDailyRows(arrays){
   return Object.values(byDate).sort(function(a,b){ return a.date<b.date?-1:1; });
 }
 
+function _buildWeeklyTrendRows(mediaType){
+  return WL.map(function(lbl){
+    var w = allWeeklyKpi[lbl];
+    var spend, conv, clk;
+    if(mediaType === 'naver'){
+      spend = (w.npc.spend||0) + (w.nmo.spend||0);
+      conv  = (w.npc.conv ||0) + (w.nmo.conv ||0);
+      clk   = (w.npc.clk  ||0) + (w.nmo.clk  ||0);
+    } else {
+      spend = (w.gb.spend||0) + (w.gc.spend||0) + (w.gg.spend||0);
+      conv  = (w.gb.conv ||0) + (w.gc.conv ||0) + (w.gg.conv ||0);
+      clk   = (w.gb.clk  ||0) + (w.gc.clk  ||0) + (w.gg.clk  ||0);
+    }
+    return { date: lbl, day: '', spend: spend, conv: conv, clk: clk };
+  });
+}
+
 function _renderSplitChart(canvasId, rows, colorMain, type, prevChart){
   const canvas = document.getElementById(canvasId);
   if(!canvas) return null;
   if(prevChart) prevChart.destroy();
   if(!rows || !rows.length) return null;
 
-  const labels = rows.map(function(r){ return r.date+'('+r.day+')'; });
+  const labels = rows.map(function(r){ return r.day ? r.date+'('+r.day+')' : r.date; });
   var datasets;
   if(type === 'spend'){
     datasets = [
@@ -651,8 +668,8 @@ function onWeekChange(weekLabel){
 
   // 일별 성과 추이 차트
   var dr = curr.daily_rows || {};
-  var nRows = _mergeDailyRows([dr.npc, dr.nmo]);
-  var gRows = _mergeDailyRows([dr.gb,  dr.gc, dr.gg]);
+  var nRows = _buildWeeklyTrendRows('naver');
+  var gRows = _buildWeeklyTrendRows('google');
   _chartNSpend = _renderSplitChart('chart-n-spend', nRows, _C_NAVER,  'spend', _chartNSpend);
   _chartNConv  = _renderSplitChart('chart-n-conv',  nRows, _C_NAVER,  'conv',  _chartNConv);
   _chartGSpend = _renderSplitChart('chart-g-spend', gRows, _C_GOOGLE, 'spend', _chartGSpend);
