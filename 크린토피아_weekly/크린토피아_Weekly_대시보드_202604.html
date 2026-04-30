@@ -135,7 +135,7 @@ tr:hover td{background:#f5f9ff}
   <div><span class="t-title">크린토피아 <span>홈클리닝</span> · Weekly</span><span class="pill">2026년 4월</span></div>
   <div style="display:flex;align-items:center;gap:12px">
     <span class="build-status hidden" id="build-status"><span class="build-spinner"></span>데이터 업데이트 중</span>
-    <div class="t-meta">업데이트: 2026/04/30 12:06</div>
+    <div class="t-meta">업데이트: 2026/04/30 12:09</div>
   </div>
 </div>
 
@@ -674,7 +674,7 @@ function onWeekChange(weekLabel){
   _chartNSpend = _renderSplitChart('chart-n-spend', nRows, _C_NAVER,  'spend', _chartNSpend, 500);
   _chartNConv  = _renderSplitChart('chart-n-conv',  nRows, _C_NAVER,  'conv',  _chartNConv);
   _chartGSpend = _renderSplitChart('chart-g-spend', gRows, _C_GOOGLE, 'spend', _chartGSpend);
-  _chartGConv  = _renderSplitChart('chart-g-conv',  gRows, _C_GOOGLE, 'conv',  _chartGConv);
+  _chartGConv  = _renderSplitChart('chart-g-conv',  gRows, _C_GOOGLE, 'conv',  _chartGConv, 25000);
 
   // 이번주 vs 전주 비교 표
   _renderCmpTable('sum-n-cmp-tbl', _naverSaTotal(curr), prev?_naverSaTotal(prev):null, '#1a1a18');

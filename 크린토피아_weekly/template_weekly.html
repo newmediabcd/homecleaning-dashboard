@@ -674,7 +674,7 @@ function onWeekChange(weekLabel){
   _chartNSpend = _renderSplitChart('chart-n-spend', nRows, _C_NAVER,  'spend', _chartNSpend, 500);
   _chartNConv  = _renderSplitChart('chart-n-conv',  nRows, _C_NAVER,  'conv',  _chartNConv);
   _chartGSpend = _renderSplitChart('chart-g-spend', gRows, _C_GOOGLE, 'spend', _chartGSpend);
-  _chartGConv  = _renderSplitChart('chart-g-conv',  gRows, _C_GOOGLE, 'conv',  _chartGConv);
+  _chartGConv  = _renderSplitChart('chart-g-conv',  gRows, _C_GOOGLE, 'conv',  _chartGConv, 25000);
 
   // 이번주 vs 전주 비교 표
   _renderCmpTable('sum-n-cmp-tbl', _naverSaTotal(curr), prev?_naverSaTotal(prev):null, '#1a1a18');
