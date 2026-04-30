@@ -123,6 +123,8 @@ tr:hover td{background:#f5f9ff}
 .kw-label{font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:.35rem}
 
 .chart-wrap{background:#fff;border:1px solid var(--b);border-radius:var(--rs);padding:1rem 1rem .5rem;margin-bottom:.6rem;position:relative}
+.chart-row{display:flex;gap:.6rem;margin-bottom:.6rem}
+.chart-row .chart-wrap{flex:1;margin-bottom:0}
 @media(max-width:768px){.pg{padding:1rem 1rem 2rem}.kg{grid-template-columns:repeat(2,1fr)}.kg5{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -133,7 +135,7 @@ tr:hover td{background:#f5f9ff}
   <div><span class="t-title">크린토피아 <span>홈클리닝</span> · Weekly</span><span class="pill">2026년 4월</span></div>
   <div style="display:flex;align-items:center;gap:12px">
     <span class="build-status hidden" id="build-status"><span class="build-spinner"></span>데이터 업데이트 중</span>
-    <div class="t-meta">업데이트: 2026/04/30 10:28</div>
+    <div class="t-meta">업데이트: 2026/04/30 10:56</div>
   </div>
 </div>
 
@@ -169,7 +171,10 @@ tr:hover td{background:#f5f9ff}
     <div class="ki"><div class="kl">네이버 CPA</div><div class="kv" id="kpi-n-cpa">—</div><div class="ks kn" id="kpi-n-cpa-bdg">—</div></div>
     <div class="ki"><div class="kl">네이버 CVR</div><div class="kv" id="kpi-n-cvr">—</div><div class="ks kn" id="kpi-n-cvr-bdg">—</div></div>
   </div>
-  <div class="chart-wrap"><canvas id="chart-n-daily" height="100"></canvas></div>
+  <div class="chart-row">
+    <div class="chart-wrap"><canvas id="chart-n-spend" height="50"></canvas></div>
+    <div class="chart-wrap"><canvas id="chart-n-conv" height="50"></canvas></div>
+  </div>
   <div class="tw"><table><thead><tr><th></th><th>노출</th><th>클릭</th><th>광고비</th><th>CPC</th><th>CTR</th><th>전환</th><th>CVR</th><th>CPA</th></tr></thead><tbody id="sum-n-cmp-tbl"></tbody></table></div>
 
   <div class="kg-label" style="margin-top:.8rem">구글 SA</div>
@@ -179,7 +184,10 @@ tr:hover td{background:#f5f9ff}
     <div class="ki"><div class="kl">구글 CPA</div><div class="kv" id="kpi-g-cpa">—</div><div class="ks kn" id="kpi-g-cpa-bdg">—</div></div>
     <div class="ki"><div class="kl">구글 CVR</div><div class="kv" id="kpi-g-cvr">—</div><div class="ks kn" id="kpi-g-cvr-bdg">—</div></div>
   </div>
-  <div class="chart-wrap"><canvas id="chart-g-daily" height="100"></canvas></div>
+  <div class="chart-row">
+    <div class="chart-wrap"><canvas id="chart-g-spend" height="50"></canvas></div>
+    <div class="chart-wrap"><canvas id="chart-g-conv" height="50"></canvas></div>
+  </div>
   <div class="tw"><table><thead><tr><th></th><th>노출</th><th>클릭</th><th>광고비</th><th>CPC</th><th>CTR</th><th>전환</th><th>CVR</th><th>CPA</th></tr></thead><tbody id="sum-g-cmp-tbl"></tbody></table></div>
 </div>
 
@@ -535,7 +543,7 @@ function _renderSummaryKpi(curr, prev){
 }
 
 // ── 일별 성과 추이 차트 ──
-var _chartN = null, _chartG = null;
+var _chartNSpend=null, _chartNConv=null, _chartGSpend=null, _chartGConv=null;
 const _C_NAVER  = 'rgba(15,158,110,{a})';
 const _C_GOOGLE = 'rgba(45,125,210,{a})';
 const _C_CPA    = 'rgba(217,64,64,0.85)';
@@ -556,49 +564,41 @@ function _mergeDailyRows(arrays){
   return Object.values(byDate).sort(function(a,b){ return a.date<b.date?-1:1; });
 }
 
-function _renderSummaryChart(canvasId, rows, colorMain, prevChart){
+function _renderSplitChart(canvasId, rows, colorMain, type, prevChart){
   const canvas = document.getElementById(canvasId);
   if(!canvas) return null;
   if(prevChart) prevChart.destroy();
   if(!rows || !rows.length) return null;
 
-  const labels   = rows.map(function(r){ return r.date+'('+r.day+')'; });
-  const spendData = rows.map(function(r){ return r.spend; });
-  const convData  = rows.map(function(r){ return r.conv; });
-  const cpaData   = rows.map(function(r){ return r.conv>0 ? Math.round(r.spend/r.conv) : null; });
-  const cpcData   = rows.map(function(r){ return r.clk>0  ? Math.round(r.spend/r.clk)  : null; });
+  const labels = rows.map(function(r){ return r.date+'('+r.day+')'; });
+  var datasets;
+  if(type === 'spend'){
+    datasets = [
+      { type:'bar',  label:'광고비', data:rows.map(function(r){ return r.spend; }),
+        backgroundColor:_clr(colorMain,'0.72'), yAxisID:'yMain', order:2 },
+      { type:'line', label:'CPC', data:rows.map(function(r){ return r.clk>0 ? Math.round(r.spend/r.clk) : null; }),
+        borderColor:_C_CPC, backgroundColor:'transparent',
+        pointRadius:3, pointHoverRadius:4, borderWidth:2, borderDash:[4,3],
+        yAxisID:'yRate', order:1, spanGaps:false }
+    ];
+  } else {
+    datasets = [
+      { type:'bar',  label:'전환', data:rows.map(function(r){ return r.conv; }),
+        backgroundColor:_clr(colorMain,'0.50'), yAxisID:'yMain', order:2 },
+      { type:'line', label:'CPA', data:rows.map(function(r){ return r.conv>0 ? Math.round(r.spend/r.conv) : null; }),
+        borderColor:_C_CPA, backgroundColor:'transparent',
+        pointRadius:3, pointHoverRadius:4, borderWidth:2,
+        yAxisID:'yRate', order:1, spanGaps:false }
+    ];
+  }
 
   return new Chart(canvas, {
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          type:'bar', label:'광고비', data:spendData,
-          backgroundColor:_clr(colorMain,'0.72'), yAxisID:'ySpend', order:2
-        },
-        {
-          type:'bar', label:'전환', data:convData,
-          backgroundColor:_clr(colorMain,'0.35'), yAxisID:'yConv', order:3
-        },
-        {
-          type:'line', label:'CPA', data:cpaData,
-          borderColor:_C_CPA, backgroundColor:'transparent',
-          pointRadius:3, pointHoverRadius:5, borderWidth:2,
-          yAxisID:'yRate', order:1, spanGaps:false
-        },
-        {
-          type:'line', label:'CPC', data:cpcData,
-          borderColor:_C_CPC, backgroundColor:'transparent',
-          pointRadius:3, pointHoverRadius:5, borderWidth:2, borderDash:[4,3],
-          yAxisID:'yRate', order:1, spanGaps:false
-        }
-      ]
-    },
+    data:{ labels:labels, datasets:datasets },
     options:{
       responsive:true, maintainAspectRatio:true,
       interaction:{mode:'index', intersect:false},
       plugins:{
-        legend:{position:'top', labels:{font:{size:11}, boxWidth:12, padding:12}},
+        legend:{position:'top', labels:{font:{size:10}, boxWidth:10, padding:8}},
         tooltip:{
           callbacks:{
             label:function(ctx){
@@ -612,18 +612,17 @@ function _renderSummaryChart(canvasId, rows, colorMain, prevChart){
         }
       },
       scales:{
-        x:{ticks:{font:{size:11}}, grid:{display:false}},
-        ySpend:{
+        x:{ticks:{font:{size:10}}, grid:{display:false}},
+        yMain:{
           position:'left',
-          ticks:{font:{size:10}, callback:function(v){ return (v/10000).toFixed(0)+'만'; }},
+          ticks:{font:{size:9}, callback:function(v){
+            return type==='spend' ? (v/10000).toFixed(0)+'만' : v+'건';
+          }},
           grid:{color:'rgba(0,0,0,0.06)'}
-        },
-        yConv:{
-          position:'left', display:false
         },
         yRate:{
           position:'right',
-          ticks:{font:{size:10}, callback:function(v){ return v.toLocaleString()+'원'; }},
+          ticks:{font:{size:9}, callback:function(v){ return v.toLocaleString()+'원'; }},
           grid:{drawOnChartArea:false}
         }
       }
@@ -652,8 +651,12 @@ function onWeekChange(weekLabel){
 
   // 일별 성과 추이 차트
   var dr = curr.daily_rows || {};
-  _chartN = _renderSummaryChart('chart-n-daily', _mergeDailyRows([dr.npc, dr.nmo]), _C_NAVER,  _chartN);
-  _chartG = _renderSummaryChart('chart-g-daily', _mergeDailyRows([dr.gb,  dr.gc, dr.gg]), _C_GOOGLE, _chartG);
+  var nRows = _mergeDailyRows([dr.npc, dr.nmo]);
+  var gRows = _mergeDailyRows([dr.gb,  dr.gc, dr.gg]);
+  _chartNSpend = _renderSplitChart('chart-n-spend', nRows, _C_NAVER,  'spend', _chartNSpend);
+  _chartNConv  = _renderSplitChart('chart-n-conv',  nRows, _C_NAVER,  'conv',  _chartNConv);
+  _chartGSpend = _renderSplitChart('chart-g-spend', gRows, _C_GOOGLE, 'spend', _chartGSpend);
+  _chartGConv  = _renderSplitChart('chart-g-conv',  gRows, _C_GOOGLE, 'conv',  _chartGConv);
 
   // 이번주 vs 전주 비교 표
   _renderCmpTable('sum-n-cmp-tbl', _naverSaTotal(curr), prev?_naverSaTotal(prev):null, '#1a1a18');
