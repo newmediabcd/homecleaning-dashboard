@@ -581,7 +581,7 @@ function _buildWeeklyTrendRows(mediaType){
   });
 }
 
-function _renderSplitChart(canvasId, rows, colorMain, type, prevChart){
+function _renderSplitChart(canvasId, rows, colorMain, type, prevChart, yRateMin){
   const canvas = document.getElementById(canvasId);
   if(!canvas) return null;
   if(prevChart) prevChart.destroy();
@@ -639,6 +639,7 @@ function _renderSplitChart(canvasId, rows, colorMain, type, prevChart){
         },
         yRate:{
           position:'right',
+          min: yRateMin || undefined,
           ticks:{font:{size:9}, callback:function(v){ return v.toLocaleString()+'원'; }},
           grid:{drawOnChartArea:false}
         }
@@ -670,7 +671,7 @@ function onWeekChange(weekLabel){
   var dr = curr.daily_rows || {};
   var nRows = _buildWeeklyTrendRows('naver');
   var gRows = _buildWeeklyTrendRows('google');
-  _chartNSpend = _renderSplitChart('chart-n-spend', nRows, _C_NAVER,  'spend', _chartNSpend);
+  _chartNSpend = _renderSplitChart('chart-n-spend', nRows, _C_NAVER,  'spend', _chartNSpend, 500);
   _chartNConv  = _renderSplitChart('chart-n-conv',  nRows, _C_NAVER,  'conv',  _chartNConv);
   _chartGSpend = _renderSplitChart('chart-g-spend', gRows, _C_GOOGLE, 'spend', _chartGSpend);
   _chartGConv  = _renderSplitChart('chart-g-conv',  gRows, _C_GOOGLE, 'conv',  _chartGConv);
