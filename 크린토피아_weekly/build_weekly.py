@@ -5,7 +5,7 @@
 """
 
 import sys, os, json, calendar
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from urllib.parse import quote
 
 import pandas as pd
@@ -457,7 +457,7 @@ def main():
     latest       = weeks[-1]
     year, month  = latest["year"], latest["month"]
     weeks_lbl_js = json.dumps([wk["label"] for wk in weeks], ensure_ascii=False)
-    update_date  = datetime.now().strftime("%Y/%m/%d %H:%M")
+    update_date  = datetime.now(timezone(timedelta(hours=9))).strftime("%Y/%m/%d %H:%M")
 
     print("\n[5] 템플릿 렌더링 중...")
     tpl_path = os.path.join(BASE_DIR, TEMPLATE_FILE)

@@ -133,7 +133,7 @@ tr:hover td{background:#f5f9ff}
   <div><span class="t-title">크린토피아 <span>홈클리닝</span> · Weekly</span><span class="pill">2026년 4월</span></div>
   <div style="display:flex;align-items:center;gap:12px">
     <span class="build-status hidden" id="build-status"><span class="build-spinner"></span>데이터 업데이트 중</span>
-    <div class="t-meta">업데이트: 2026/04/30 10:09</div>
+    <div class="t-meta">업데이트: 2026/04/30 10:25</div>
   </div>
 </div>
 
@@ -720,33 +720,17 @@ function onSecWeekChange(pageId, weekLabel){
 </script>
 
 <script>
-// 빌드 상태 표시
+// 빌드 상태 표시 (Apps Script Web App 폴링)
 (function(){
-  var API='https://api.github.com/repos/newmediabcd/homecleaning-dashboard/actions/runs?per_page=10';
+  var STATUS_URL='https://script.google.com/macros/s/AKfycbxuNQINgFgy1ZcMif-dy9k5k8SENuJU2wLYK-wNQqtC0o__dghZ7Pm3vC53-TUHxcruYg/exec';
   var el=document.getElementById('build-status');
-  var _etag=null, _lastRuns=[];
-  function _processRuns(runs){
-    var active=null;
-    for(var i=0;i<runs.length;i++){
-      var r=runs[i];
-      if(r.status==='in_progress'||r.status==='queued'||r.status==='waiting'){active=r;break;}
-    }
-    if(active){el.classList.remove('hidden');}
-    else{el.classList.add('hidden');}
-  }
   function check(){
-    var headers={};
-    if(_etag) headers['If-None-Match']=_etag;
-    fetch(API,{headers:headers}).then(function(r){
-      if(r.status===304){_processRuns(_lastRuns);return null;}
-      if(r.status!==200){_processRuns([]);return null;} // rate limit 등 비정상 응답 → 숨김
-      var et=r.headers.get('ETag'); if(et) _etag=et;
-      return r.json();
-    }).then(function(data){
-      if(!data) return;
-      _lastRuns=data.workflow_runs||[];
-      _processRuns(_lastRuns);
-    }).catch(function(){});
+    fetch(STATUS_URL+'?t='+Date.now(),{cache:'no-store'})
+      .then(function(r){return r.json();})
+      .then(function(data){
+        if(data.updating) el.classList.remove('hidden');
+        else el.classList.add('hidden');
+      }).catch(function(){});
   }
   check();
   setInterval(check,3000);
